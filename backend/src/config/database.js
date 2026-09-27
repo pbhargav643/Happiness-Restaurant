@@ -10,10 +10,16 @@ import { MONGODB_URI } from './env.js';
  * - Logs explicit status: "[Database] MongoDB connected successfully" or "[Database] MongoDB connection failed: <error>"
  * - Does not silently swallow connection errors or claim fake connectivity
  */
+let cachedPromise = null;
+
 export async function connectDB(customUri = null) {
   // Prevent duplicate connection initialization
   if (mongoose.connection.readyState === 1) {
     return mongoose;
+  }
+
+  if (cachedPromise) {
+    return cachedPromise;
   }
 
   const uri = customUri !== null ? customUri : (process.env.MONGODB_URI || MONGODB_URI);
@@ -24,14 +30,15 @@ export async function connectDB(customUri = null) {
   }
 
   try {
-    const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000,
-      family: 4,
-      autoSelectFamily: false,
+    cachedPromise = mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 10000,
+      maxPoolSize: 10,
     });
+    const conn = await cachedPromise;
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     return conn;
   } catch (error) {
+    cachedPromise = null;
     console.error(`MONGODB STATUS: CONNECTION FAILED - ${error.message}`);
     return null;
   }
