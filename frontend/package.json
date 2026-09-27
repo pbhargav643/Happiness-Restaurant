@@ -1,0 +1,27 @@
+{
+  "name": "restaurant-foods-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node tests/menu/menuImages.test.js && node tests/menu/imageMapping.test.js && node tests/menu/availability.test.js && node tests/menu/adminMenuCrud.test.js && node tests/menu/menuManagement.test.js && node tests/menu/categoryFiltering.test.js && node tests/api/api.test.js && node tests/menu/menuApi.test.js && node tests/menu/adminMenu.test.js && node tests/settings/settingsApi.test.js && node tests/orders/orderApi.test.js && node tests/orders/checkoutOrder.test.js && node tests/orders/orderHistory.test.js && node tests/orders/orderDetails.test.js && node tests/orders/orderHistoryStates.test.js && node tests/orders/orderHistoryOwnership.test.js && node tests/orders/orderHistoryResponsive.test.js && node tests/orders/orderTracking.test.js && node tests/orders/phase12OrdersQA.test.js && node tests/orders/adminOrderWorkflow.test.js && node tests/orders/finalOrderSystemQA.test.js && node tests/notifications/adminNotifications.test.js && node tests/admin/adminOrderApi.test.js && node tests/admin/adminOrders.test.js && node tests/admin/adminOrderStatus.test.js && node tests/auth/authApi.test.js && node tests/auth/adminLogin.test.js && node tests/auth/protectedAdminRoute.test.js && node tests/auth/logout.test.js && node tests/auth/customerAuth.test.js && node tests/auth/customer/customerRoutes.test.js && node tests/auth/customerForgotPassword.test.js && node tests/menu/hero-image.test.js && node tests/menu/category-cards.test.js && node tests/menu/menu-detail.test.js && node tests/menu/menu-images.test.js && node tests/menu/soup-images-verification.test.js && node tests/menu/starter-images-verification.test.js && node tests/menu/image-area-optimization.test.js && node tests/menu/kabab-images-root-cause.test.js && node tests/menu/menu-image-integration-final.test.js && node tests/menu/chinese-rice-images.test.js && node tests/menu/fast-food-images.test.js && node tests/menu/pizza-images.test.js && node tests/menu/special-punjabi-images.test.js && node tests/menu/special-veg-punjabi-images.test.js && node tests/menu/garden-fresh-vegetables-images.test.js && node tests/menu/roti-images.test.js && node tests/cart/cart.test.js && node tests/cart/addToCart.test.js && node tests/checkout/checkout.test.js && node tests/order/order-placement.test.js && node tests/order/cart-checkout-order-flow.test.js && node tests/order/order-history.test.js && node tests/order/order-tracking.test.js && node tests/order/order-persistence.test.js && node tests/admin/order-management.test.js && node tests/admin/admin-menu.test.js && node tests/admin/admin-settings.test.js && node tests/admin/admin-dashboard.test.js && node tests/order/orderTracking.test.js && node tests/order/orderTrackingStates.test.js && node tests/order/orderTrackingOwnership.test.js && node tests/order/orderTrackingErrors.test.js && node tests/order/orderConfirmation.test.js && node tests/security/frontendSecurity.test.js && node tests/audit/responsivePerformance.test.js"
+
+
+
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
+    "vite": "^5.4.11"
+  }
+}

@@ -1,0 +1,267 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Core Color Tokens */
+  --color-primary: #121214;          /* Deep charcoal / near-black */
+  --color-primary-light: #1E1E24;
+  --color-secondary: #FDFBF7;        /* Warm cream / off-white */
+  --color-secondary-dark: #F4EFE6;
+  --color-accent: #D4AF37;           /* Elegant warm gold */
+  --color-accent-hover: #B89628;
+  --color-accent-light: #F9F1D8;
+  --color-muted: #71717A;            /* Muted gray tones */
+  --color-muted-light: #A1A1AA;
+  --color-muted-bg: #F4F4F5;
+  --color-border: #E4E4E7;
+  --color-veg: #16A34A;              /* Green veg indicator */
+  --color-card: #FFFFFF;
+}
+
+/* Global Reset & Base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--color-secondary);
+  color: var(--color-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+
+/* Enforce overflow-x: hidden for isolated containers without breaking document-level sticky positioning */
+.overflow-x-prevent {
+  overflow-x: hidden;
+}
+
+/* Responsive media defaults */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Input and Button Font Inheritance */
+input, button, textarea, select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Accessible focus styling */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Clean, unobtrusive scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F4EFE6;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D1C7B7;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B8AC99;
+}
+
+/* Subtle Hero & UI Entrance Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==========================================================================
+   Order Confirmation Premium Button Shine Sweep & Distinctive Styling
+   ========================================================================== */
+.btn-premium-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-premium-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -120%;
+  width: 60%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent 80%
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.btn-premium-shine:hover::after {
+  opacity: 1;
+  transform: translateX(450%) skewX(-20deg);
+}
+
+/* Subtle gold sweep for white/light buttons */
+.btn-premium-shine-gold::after {
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(212, 175, 55, 0.22) 50%,
+    transparent 80%
+  );
+}
+
+/* Custom Distinctive Order Action Buttons */
+.btn-order-action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem; /* rounded-xl */
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out, background 200ms ease-out;
+  cursor: pointer;
+  user-select: none;
+  min-height: 46px;
+}
+
+.btn-order-action:hover {
+  transform: translateY(-2px);
+}
+
+.btn-order-action:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* 1. Continue Shopping (Dark Primary with Gold Accent Detail) */
+.btn-order-continue {
+  background: linear-gradient(180deg, #1f2533 0%, #111520 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.btn-order-continue:hover {
+  background: linear-gradient(180deg, #272f40 0%, #151a27 100%) !important;
+  border-color: rgba(212, 175, 55, 0.85) !important;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.38), 0 0 14px rgba(212, 175, 55, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+/* 2. Track Order (Gold Primary Action with Rich Depth) */
+.btn-order-track {
+  background: linear-gradient(180deg, #e8c95e 0%, #d4af37 55%, #bd9624 100%) !important;
+  color: #111827 !important;
+  border: 1px solid #b38d1e !important;
+  box-shadow: 0 2px 6px rgba(212, 175, 55, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+}
+
+.btn-order-track:hover {
+  background: linear-gradient(180deg, #edd16c 0%, #dcba44 55%, #c79e28 100%) !important;
+  border-color: #9e7914 !important;
+  box-shadow: 0 8px 22px rgba(212, 175, 55, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+
+/* 3 & 4. My Orders & Print Order (Refined Light Secondary Buttons) */
+.btn-order-secondary {
+  background: linear-gradient(180deg, #ffffff 0%, #faf8f5 100%) !important;
+  color: #1f2937 !important;
+  border: 1px solid #e2dfd8 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), inset 0 1px 0 #ffffff !important;
+}
+
+.btn-order-secondary:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #fdfbf7 100%) !important;
+  color: #111827 !important;
+  border-color: #d4af37 !important;
+  box-shadow: 0 6px 18px rgba(212, 175, 55, 0.18), 0 2px 4px rgba(0, 0, 0, 0.04), inset 0 1px 0 #ffffff !important;
+}
+
+/* Accessibility: Respect Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .btn-premium-shine::after {
+    display: none !important;
+  }
+
+  .btn-order-action,
+  .btn-order-action:hover,
+  .btn-order-action:active {
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   Menu Fixed Sidebar Custom Scrollbar
+   ========================================================================== */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.25);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.6);
+}
+
