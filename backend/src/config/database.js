@@ -11,6 +11,11 @@ import { MONGODB_URI } from './env.js';
  * - Does not silently swallow connection errors or claim fake connectivity
  */
 let cachedPromise = null;
+let lastConnectionError = null;
+
+export function getLastDbError() {
+  return lastConnectionError;
+}
 
 export async function connectDB(customUri = null) {
   // Prevent duplicate connection initialization
@@ -25,6 +30,7 @@ export async function connectDB(customUri = null) {
   const uri = customUri !== null ? customUri : (process.env.MONGODB_URI || MONGODB_URI);
 
   if (!uri) {
+    lastConnectionError = 'MONGODB_URI environment variable is missing or empty';
     console.error('MONGODB STATUS: NOT CONFIGURED');
     return null;
   }
@@ -35,10 +41,12 @@ export async function connectDB(customUri = null) {
       maxPoolSize: 10,
     });
     const conn = await cachedPromise;
+    lastConnectionError = null;
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     return conn;
   } catch (error) {
     cachedPromise = null;
+    lastConnectionError = error.message;
     console.error(`MONGODB STATUS: CONNECTION FAILED - ${error.message}`);
     return null;
   }
