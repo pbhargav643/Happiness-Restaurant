@@ -6,12 +6,18 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Development storage path: frontend/public/images/menu/
-const UPLOAD_DIR = path.resolve(__dirname, '../../../frontend/public/images/menu');
+// Development storage path: frontend/public/images/menu/ (use /tmp on Vercel serverless)
+const UPLOAD_DIR = process.env.VERCEL
+  ? path.join('/tmp', 'menu')
+  : path.resolve(__dirname, '../../../frontend/public/images/menu');
 
 // Ensure upload directory exists safely
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOAD_DIR)) {
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  }
+} catch (dirErr) {
+  console.warn('[ImageUpload] Notice: Could not create upload directory:', dirErr.message);
 }
 
 const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
