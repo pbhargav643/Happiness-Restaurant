@@ -56,9 +56,11 @@ function CustomSelect({ id, label, value, onChange, options, ariaLabel }) {
     }
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [isOpen]);
 
@@ -258,9 +260,11 @@ export default function AdminDashboardPage() {
     }
     if (showHistoryPopover) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [showHistoryPopover]);
 
@@ -500,7 +504,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* RECENT ORDERS QUEUE */}
-      <div className="bg-white rounded-3xl border border-surface-border p-5 sm:p-7 shadow-xs space-y-4">
+      <div className="bg-white rounded-3xl border border-surface-border p-4 sm:p-7 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-surface-border">
           <div>
             <h2 className="text-base sm:text-lg font-extrabold text-primary">
@@ -542,7 +546,7 @@ export default function AdminDashboardPage() {
 
               {/* Order History Dropdown Popover */}
               {showHistoryPopover && (
-                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-2xl border border-surface-border shadow-xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-[270px] xs:w-72 sm:w-80 max-w-[calc(100vw-2.5rem)] sm:max-w-none bg-white rounded-2xl border border-surface-border shadow-xl p-4 z-40 space-y-3.5 animate-in fade-in zoom-in-95 duration-150">
                   <div className="flex items-center justify-between pb-2 border-b border-surface-border">
                     <span className="text-xs font-bold text-primary tracking-tight">
                       Order History
@@ -591,9 +595,9 @@ export default function AdminDashboardPage() {
                         setShowConfirmDialog(true);
                       }}
                       disabled={ordersInSelectedPeriod === 0}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold transition-all shadow-xs active:scale-98 cursor-pointer flex items-center justify-center gap-1.5"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold transition-all shadow-xs active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 text-center leading-tight"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-white/90 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                       <span>Delete {selectedMonthName} {selectedYear} Orders</span>
@@ -626,66 +630,156 @@ export default function AdminDashboardPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse" aria-label="Recent Orders Table">
-              <thead>
-                <tr className="border-b border-surface-border text-[11px] font-bold text-muted uppercase tracking-wider">
-                  <th className="py-3 px-3">Order ID</th>
-                  <th className="py-3 px-3">Customer</th>
-                  <th className="py-3 px-3">Pickup Time</th>
-                  <th className="py-3 px-3">Items</th>
-                  <th className="py-3 px-3">Subtotal</th>
-                  <th className="py-3 px-3">Status</th>
-                  <th className="py-3 px-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-surface-border">
-                {recentQueue.map((order) => (
-                  <tr key={order.orderId} className="hover:bg-secondary/40 transition-colors">
-                    <td className="py-3 px-3 font-mono font-bold text-primary">
-                      {order.orderId}
-                    </td>
-                    <td className="py-3 px-3">
-                      <span className="font-semibold text-primary block truncate max-w-[140px]">
-                        {order.customer?.name}
+          <>
+            {/* DESKTOP TABLE VIEW (Visible >= md screens) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse" aria-label="Recent Orders Table">
+                <thead>
+                  <tr className="border-b border-surface-border text-[11px] font-bold text-muted uppercase tracking-wider">
+                    <th className="py-3 px-3">Order ID</th>
+                    <th className="py-3 px-3">Customer</th>
+                    <th className="py-3 px-3">Pickup Time</th>
+                    <th className="py-3 px-3">Items</th>
+                    <th className="py-3 px-3">Subtotal</th>
+                    <th className="py-3 px-3">Status</th>
+                    <th className="py-3 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-surface-border">
+                  {recentQueue.map((order) => (
+                    <tr key={order.orderId} className="hover:bg-secondary/40 transition-colors">
+                      <td className="py-3 px-3 font-mono font-bold text-primary">
+                        {order.orderId}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="font-semibold text-primary block truncate max-w-[140px]">
+                          {order.customer?.name}
+                        </span>
+                        <span className="text-[11px] text-muted font-mono">
+                          +91 {order.customer?.phone}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="text-primary font-medium block">
+                          {order.pickup?.dateFormatted || order.pickup?.date}
+                        </span>
+                        <span className="font-extrabold text-accent">
+                          {order.pickup?.timeFormatted || order.pickup?.time}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-muted">
+                        {order.totalCount} {order.totalCount === 1 ? 'item' : 'items'}
+                      </td>
+                      <td className="py-3 px-3 font-bold text-primary font-sans">
+                        ₹{order.subtotal}
+                      </td>
+                      <td className="py-3 px-3">
+                        <OrderStatusIndicator status={order.status || 'PLACED'} compact />
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <Link
+                          to={`/admin/orders/${order.orderId}`}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-light text-white text-[11px] font-bold transition-all shadow-2xs"
+                        >
+                          <span>Manage</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* MOBILE CARDS VIEW (Visible < md screens) */}
+            <div className="md:hidden space-y-3.5" role="list" aria-label="Recent Orders List">
+              {recentQueue.map((order) => (
+                <div
+                  key={order.orderId}
+                  className="bg-white rounded-2xl border border-surface-border p-4 shadow-xs space-y-3 hover:border-accent/40 transition-colors"
+                  role="listitem"
+                >
+                  {/* Card Top: Order ID & Status */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold text-muted uppercase tracking-wider block">
+                        Order ID
                       </span>
-                      <span className="text-[11px] text-muted font-mono">
-                        +91 {order.customer?.phone}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3">
-                      <span className="text-primary font-medium block">
-                        {order.pickup?.dateFormatted || order.pickup?.date}
-                      </span>
-                      <span className="font-extrabold text-accent">
-                        {order.pickup?.timeFormatted || order.pickup?.time}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-muted">
-                      {order.totalCount} {order.totalCount === 1 ? 'item' : 'items'}
-                    </td>
-                    <td className="py-3 px-3 font-bold text-primary font-sans">
-                      ₹{order.subtotal}
-                    </td>
-                    <td className="py-3 px-3">
-                      <OrderStatusIndicator status={order.status || 'PLACED'} compact />
-                    </td>
-                    <td className="py-3 px-3 text-right">
                       <Link
                         to={`/admin/orders/${order.orderId}`}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-light text-white text-[11px] font-bold transition-all shadow-2xs"
+                        className="font-mono font-black text-xs xs:text-sm text-primary hover:text-accent break-all transition-colors block"
+                        title={`Manage order ${order.orderId}`}
                       >
-                        <span>Manage</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
+                        {order.orderId}
                       </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                    <div className="flex-shrink-0 pt-0.5">
+                      <OrderStatusIndicator status={order.status || 'PLACED'} compact />
+                    </div>
+                  </div>
+
+                  {/* Customer Info */}
+                  <div className="bg-secondary/40 rounded-xl p-2.5 border border-surface-border/50">
+                    <span className="text-[10px] font-bold text-muted uppercase tracking-wider block">
+                      Customer
+                    </span>
+                    <div className="flex items-baseline justify-between gap-2 mt-0.5">
+                      <strong className="font-bold text-xs text-primary truncate max-w-[160px]">
+                        {order.customer?.name || 'Guest'}
+                      </strong>
+                      <span className="text-[11px] text-muted font-mono whitespace-nowrap">
+                        +91 {order.customer?.phone || order.customer?.mobile || '—'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Pickup Date & Time (Kept logically together) */}
+                  <div className="bg-amber-50/60 rounded-xl p-2.5 border border-amber-200/60">
+                    <span className="text-[10px] font-bold text-amber-900/80 uppercase tracking-wider block">
+                      Pickup Schedule
+                    </span>
+                    <div className="mt-0.5 space-y-0.5">
+                      <span className="text-xs font-semibold text-primary block leading-snug">
+                        {order.pickup?.dateFormatted || order.pickup?.date || 'Today'}
+                      </span>
+                      <span className="text-xs font-black text-amber-800 flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-accent flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        {order.pickup?.timeFormatted || order.pickup?.time || 'ASAP'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Order Summary & Action: Items, Subtotal, Manage Button */}
+                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-surface-border/70">
+                    <div>
+                      <span className="text-[10px] font-bold text-muted block">
+                        {order.totalCount} {order.totalCount === 1 ? 'item' : 'items'}
+                      </span>
+                      <span className="text-sm font-black text-primary font-sans">
+                        ₹{order.subtotal}
+                      </span>
+                    </div>
+
+                    <Link
+                      to={`/admin/orders/${order.orderId}`}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-primary hover:bg-primary-light text-white text-xs font-bold transition-all shadow-2xs active:scale-98 cursor-pointer flex-shrink-0"
+                      aria-label={`Manage order ${order.orderId}`}
+                    >
+                      <span>Manage</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-accent flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 

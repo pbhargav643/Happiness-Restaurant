@@ -23,9 +23,9 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-surface-border shadow-xs transition-all duration-200">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-3 sm:px-6 xl:px-6 2xl:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-3 2xl:gap-4">
           {/* Left: Restaurant Branding */}
-          <div className="flex-shrink min-w-0">
+          <div className="flex-shrink-0 min-w-0">
             <Brand />
           </div>
 
@@ -33,13 +33,13 @@ export default function Header() {
           <Navbar />
 
           {/* Right: Quick Action Controls */}
-          <div className="flex items-center space-x-1.5 sm:space-x-3 flex-shrink-0">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 2xl:space-x-3 flex-shrink-0">
             {/* Customer Account / Sign In Link */}
             {isAuthenticated ? (
               <NavLink
                 to="/account"
                 className={({ isActive }) =>
-                  `hidden sm:inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
+                  `hidden sm:inline-flex items-center gap-1.5 px-2.5 2xl:px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
                     isActive
                       ? 'text-primary bg-secondary-dark border border-accent/40 font-bold'
                       : 'text-muted hover:text-primary hover:bg-muted-bg border border-transparent'
@@ -65,7 +65,7 @@ export default function Header() {
               <NavLink
                 to="/login"
                 className={({ isActive }) =>
-                  `hidden sm:inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
+                  `hidden sm:inline-flex items-center gap-1.5 px-2.5 2xl:px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
                     isActive
                       ? 'text-primary bg-secondary-dark border border-accent/40 font-bold'
                       : 'text-muted hover:text-primary hover:bg-muted-bg border border-transparent'
@@ -95,7 +95,7 @@ export default function Header() {
             <NavLink
               to="/track-order"
               className={({ isActive }) =>
-                `hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
+                `hidden md:inline-flex items-center gap-1.5 px-2.5 2xl:px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
                   isActive
                     ? 'text-primary bg-secondary-dark border border-accent/40 font-bold'
                     : 'text-muted hover:text-primary hover:bg-muted-bg border border-transparent'
@@ -123,7 +123,7 @@ export default function Header() {
             {/* Cart Button Entry with dynamic count badge */}
             <Link
               to="/cart"
-              className="relative inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-primary text-white hover:bg-primary-light transition-all duration-150 focus-visible:ring-2 focus-visible:ring-accent shadow-xs active:scale-95"
+              className="relative inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 2xl:px-4 py-1.5 sm:py-2 rounded-lg bg-primary text-white hover:bg-primary-light transition-all duration-150 focus-visible:ring-2 focus-visible:ring-accent shadow-xs active:scale-95"
               aria-label={`View shopping cart, ${cartTotalCount} ${cartTotalCount === 1 ? 'item' : 'items'}`}
             >
               <svg

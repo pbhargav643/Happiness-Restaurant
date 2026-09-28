@@ -1,4 +1,5 @@
 import React from 'react';
+import Container from '../../components/common/Container';
 
 /**
  * FaqPage Placeholder
@@ -7,7 +8,7 @@ import React from 'react';
  */
 export default function FaqPage() {
   return (
-    <div className="max-w-7xl mx-auto p-8 text-center">
+    <Container className="py-8 text-center">
       <div className="p-8 border-2 border-dashed border-surface-border rounded-xl bg-white max-w-xl mx-auto">
         <span className="inline-block px-3 py-1 text-xs font-semibold text-accent bg-accent/10 rounded-full mb-3">
           Temporary Route Placeholder
@@ -20,6 +21,6 @@ export default function FaqPage() {
           Frequently asked questions regarding parcel pickup ordering, pickup slots, and counter payments will be implemented in Phase 10.
         </p>
       </div>
-    </div>
+    </Container>
   );
 }
