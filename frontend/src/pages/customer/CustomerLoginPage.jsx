@@ -68,7 +68,11 @@ export default function CustomerLoginPage() {
       } else if (err?.status === 429) {
         setErrorMessage('Too many login attempts. Please wait a few minutes before trying again.');
       } else if (err?.message?.includes('network') || err?.message?.includes('reach') || err?.status === 0) {
-        setErrorMessage('Unable to connect to the restaurant server. Please check your internet connection.');
+        setErrorMessage(
+          import.meta.env.DEV
+            ? 'Unable to connect to backend server (port 5000). Please start backend with: npm run dev in backend directory.'
+            : 'Unable to connect to the restaurant server. Please check your internet connection.'
+        );
       } else {
         setErrorMessage(err?.message || 'Login failed. Please verify your credentials.');
       }

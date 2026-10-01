@@ -105,7 +105,11 @@ export default function CustomerRegisterPage() {
       if (err?.status === 409) {
         setErrorMessage(err?.message || 'An account with this mobile number or email already exists.');
       } else if (err?.message?.includes('network') || err?.message?.includes('reach') || err?.status === 0) {
-        setErrorMessage('Unable to connect to the restaurant server. Please check your internet connection.');
+        setErrorMessage(
+          import.meta.env.DEV
+            ? 'Unable to connect to backend server (port 5000). Please start backend with: npm run dev in backend directory.'
+            : 'Unable to connect to the restaurant server. Please check your internet connection.'
+        );
       } else {
         setErrorMessage(err?.message || 'Registration failed. Please check your details.');
       }

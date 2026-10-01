@@ -1,0 +1,21 @@
+{
+  "name": "happiness-restaurant-project",
+  "version": "1.0.0",
+  "description": "HAPPINESS RESTAURANT - Takeaway Ordering Platform (Full-Stack)",
+  "type": "module",
+  "scripts": {
+    "dev": "node start-dev.js",
+    "start": "node start-dev.js",
+    "backend": "npm run dev --prefix backend",
+    "frontend": "npm run dev --prefix frontend"
+  },
+  "keywords": [
+    "restaurant",
+    "takeaway",
+    "mern",
+    "react",
+    "express"
+  ],
+  "author": "",
+  "license": "ISC"
+}

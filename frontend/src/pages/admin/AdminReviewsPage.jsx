@@ -179,8 +179,8 @@ export default function AdminReviewsPage() {
         </div>
       )}
 
-      {/* Reviews Table Card */}
-      <div className="bg-white rounded-3xl border border-surface-border shadow-xs overflow-hidden">
+      {/* Reviews Table Card Container */}
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-surface-border shadow-xs">
         {loading ? (
           <div className="p-8 text-center text-xs text-muted space-y-3">
             <div className="w-8 h-8 rounded-full border-2 border-primary border-t-accent animate-spin mx-auto" />
@@ -199,9 +199,10 @@ export default function AdminReviewsPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="w-full overflow-x-auto">
             <table className="w-full text-left border-collapse" aria-label="Customer Reviews Table">
-              <thead>
+              {/* Header: Table columns on desktop, hidden on small screens */}
+              <thead className="hidden md:table-header-group">
                 <tr className="border-b border-surface-border bg-slate-50/70 text-[11px] font-bold text-muted uppercase tracking-wider">
                   <th scope="col" className="py-3 px-4 sm:px-6">Customer</th>
                   <th scope="col" className="py-3 px-4">Rating</th>
@@ -210,16 +211,27 @@ export default function AdminReviewsPage() {
                   <th scope="col" className="py-3 px-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-border text-xs">
+              <tbody className="divide-y divide-surface-border text-xs block md:table-row-group">
                 {reviews.map((rev) => (
-                  <tr key={rev._id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr
+                    key={rev._id}
+                    className="block md:table-row p-4 md:py-0 md:px-0 space-y-2 md:space-y-0 hover:bg-slate-50/50 transition-colors"
+                  >
                     {/* Customer Name */}
-                    <td className="py-3.5 px-4 sm:px-6 font-bold text-primary whitespace-nowrap">
-                      {rev.customerName || 'Anonymous Guest'}
+                    <td className="block md:table-cell py-0 md:py-3.5 px-0 md:px-4 sm:md:px-6">
+                      <div className="flex items-center justify-between gap-2 md:block">
+                        <span className="font-bold text-sm md:text-xs text-primary">
+                          {rev.customerName || 'Anonymous Guest'}
+                        </span>
+                        {/* Mobile date stamp in header */}
+                        <span className="text-[11px] text-muted md:hidden">
+                          {formatDate(rev.createdAt)}
+                        </span>
+                      </div>
                     </td>
 
                     {/* Rating */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
+                    <td className="block md:table-cell py-0 md:py-3.5 px-0 md:px-4 whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
                         <StarDisplay rating={rev.rating} />
                         <span className="text-[11px] font-bold text-slate-700">
@@ -229,23 +241,23 @@ export default function AdminReviewsPage() {
                     </td>
 
                     {/* Review text */}
-                    <td className="py-3.5 px-4 text-slate-700 leading-relaxed max-w-md">
-                      <p className="line-clamp-3 whitespace-pre-wrap">
+                    <td className="block md:table-cell py-1 md:py-3.5 px-0 md:px-4 text-slate-700 leading-relaxed max-w-md">
+                      <p className="bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-2xl md:rounded-none border border-surface-border/60 md:border-0 whitespace-pre-wrap">
                         {rev.comment}
                       </p>
                     </td>
 
-                    {/* Date */}
-                    <td className="py-3.5 px-4 text-muted whitespace-nowrap">
+                    {/* Date (Desktop column) */}
+                    <td className="hidden md:table-cell py-3.5 px-4 text-muted whitespace-nowrap">
                       {formatDate(rev.createdAt)}
                     </td>
 
-                    {/* Action: Delete */}
-                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                    {/* Action: Delete Button (Always visible on mobile & desktop, never clipped) */}
+                    <td className="block md:table-cell pt-2 md:pt-0 py-0 md:py-3.5 px-0 md:px-4 text-left md:text-right whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => setReviewToDelete(rev)}
-                        className="px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1.5 cursor-pointer hover:-translate-y-[1px] active:translate-y-0"
+                        className="w-full sm:w-auto px-4 py-2 md:py-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 text-xs font-bold transition-all shadow-xs inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 hover:-translate-y-[1px]"
                         aria-label={`Delete review from ${rev.customerName}`}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
