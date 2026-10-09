@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import { RESTAURANT_CONFIG } from '../constants/restaurantConfig';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 
 
 const NAV_LINKS = [
@@ -94,6 +95,8 @@ export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { admin, logout } = useAuth();
+  const { settings } = useSettings();
+  const restaurantName = settings?.restaurantName || RESTAURANT_CONFIG.name;
 
   const handleLogout = async () => {
     try {
@@ -116,7 +119,7 @@ export default function AdminLayout() {
             </div>
             <div>
               <span className="font-extrabold text-sm tracking-wide text-white block uppercase">
-                {RESTAURANT_CONFIG.name}
+                {restaurantName}
               </span>
               <span className="text-[10px] text-accent font-semibold tracking-wider uppercase">
                 Admin Operations
@@ -173,7 +176,7 @@ export default function AdminLayout() {
               <div className="flex items-center justify-between pb-4 border-b border-primary-light/40">
                 <div>
                   <span className="font-extrabold text-sm text-white uppercase block">
-                    {RESTAURANT_CONFIG.name}
+                    {restaurantName}
                   </span>
                   <span className="text-[10px] text-accent font-semibold uppercase">
                     Admin Portal

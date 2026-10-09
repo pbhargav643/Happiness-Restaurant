@@ -72,9 +72,15 @@ export function normalizeApiError(error, response = null) {
       }
     } else if (response.status === 403) {
       normalized.isForbidden = true;
+      normalized.isAuthError = true;
       normalized.message = error?.message || 'Access forbidden: Admin authorization required.';
     } else if (response.status === 404) {
       normalized.message = error?.message || 'Requested resource was not found.';
+      if (error?.data?.requiresVerification || error?.data?.isAuthError) {
+        normalized.requiresVerification = true;
+        normalized.isAuthError = true;
+        normalized.message = error?.data?.message || error?.message || 'Please sign in with the account used to place this order, or verify your registered mobile number to view its status.';
+      }
     } else if (response.status === 400) {
       normalized.message = error?.message || 'Invalid request. Please check your details and try again.';
     } else if (response.status === 409) {

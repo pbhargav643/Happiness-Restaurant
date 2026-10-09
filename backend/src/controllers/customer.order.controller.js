@@ -69,19 +69,27 @@ export const customerOrderController = {
         });
       }
 
-      const order = await orderService.getCustomerOrderById(orderId, customerId);
-
-      if (!order) {
-        // Safe 404 response that does not disclose whether another customer's order exists
+      const existingOrder = await orderService.getOrderById(orderId);
+      if (!existingOrder) {
+        // Safe 404 response when order genuinely does not exist
         return res.status(404).json({
           success: false,
           message: 'Order not found',
         });
       }
 
+      if (!existingOrder.customerId || existingOrder.customerId.toString() !== customerId.toString()) {
+        return res.status(404).json({
+          success: false,
+          message: 'Please sign in with the account used to place this order, or verify your registered mobile number to view its status.',
+          requiresVerification: true,
+          isAuthError: true,
+        });
+      }
+
       return res.status(200).json({
         success: true,
-        data: order,
+        data: existingOrder,
       });
     } catch (error) {
       if (error.statusCode) {

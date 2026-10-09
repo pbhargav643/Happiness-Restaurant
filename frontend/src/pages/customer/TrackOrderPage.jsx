@@ -48,6 +48,10 @@ export default function TrackOrderPage() {
 
   const isFetchingRef = useRef(false);
   const pollingTimerRef = useRef(null);
+  const recentOrdersRef = useRef(recentOrders);
+  recentOrdersRef.current = recentOrders;
+  const customerRef = useRef(customer);
+  customerRef.current = customer;
 
   // Clean stale order references on initialization
   useEffect(() => {
@@ -183,36 +187,33 @@ export default function TrackOrderPage() {
   /**
    * Find order from local state / local storage
    */
-  const findLocalOrder = useCallback(
-    (id) => {
-      if (!id) return null;
-      const cleanId = String(id).trim().toUpperCase();
+  const findLocalOrder = useCallback((id) => {
+    if (!id) return null;
+    const cleanId = String(id).trim().toUpperCase();
 
-      // Never treat known stale IDs as valid local orders
-      if (cleanId === 'RF-20260920-115542') return null;
+    // Never treat known stale IDs as valid local orders
+    if (cleanId === 'RF-20260920-115542') return null;
 
-      // 1. Check recentOrders in state
-      const fromRecent = recentOrders.find(
-        (o) => o && String(o.orderId || '').trim().toUpperCase() === cleanId
-      );
-      if (fromRecent) return fromRecent;
+    // 1. Check recentOrders from ref (prevents re-render loop!)
+    const fromRecent = (recentOrdersRef.current || []).find(
+      (o) => o && String(o.orderId || '').trim().toUpperCase() === cleanId
+    );
+    if (fromRecent) return fromRecent;
 
-      // 2. Check getOrderById from orderService (checks restaurant_orders and active order)
-      const localRes = getOrderById(cleanId);
-      if (localRes?.success && localRes.order) {
-        return localRes.order;
-      }
+    // 2. Check getOrderById from orderService (checks restaurant_orders and active order)
+    const localRes = getOrderById(cleanId);
+    if (localRes?.success && localRes.order) {
+      return localRes.order;
+    }
 
-      // 3. Fallback check active order
-      const active = getActiveOrder();
-      if (active && String(active.orderId || '').trim().toUpperCase() === cleanId) {
-        return active;
-      }
+    // 3. Fallback check active order
+    const active = getActiveOrder();
+    if (active && String(active.orderId || '').trim().toUpperCase() === cleanId) {
+      return active;
+    }
 
-      return null;
-    },
-    [recentOrders]
-  );
+    return null;
+  }, []);
 
   /**
    * Strict customer ownership verification for local orders
@@ -247,7 +248,13 @@ export default function TrackOrderPage() {
    */
   const fetchOrderFromBackend = useCallback(
     async (isInitialLoad = true) => {
-      if (!currentTrackingId || isFetchingRef.current) return;
+      if (!currentTrackingId) {
+        setLoading(false);
+        setIsRefreshing(false);
+        return;
+      }
+
+      if (isFetchingRef.current) return;
 
       isFetchingRef.current = true;
       if (isInitialLoad) {
@@ -260,7 +267,7 @@ export default function TrackOrderPage() {
       // Check if order is available in customer's verified local order source
       const localOrder = findLocalOrder(currentTrackingId);
       const ownership = localOrder
-        ? verifyOrderOwnership(localOrder, customer, isAuthenticated)
+        ? verifyOrderOwnership(localOrder, customerRef.current, isAuthenticated)
         : null;
 
       if (localOrder && ownership) {
@@ -268,12 +275,12 @@ export default function TrackOrderPage() {
           isFetchingRef.current = false;
           setTrackedOrder(null);
           setFetchError({
-            message: 'You are not authorized to view this order.',
+            message: 'Please sign in with the account used to place this order, or verify your registered mobile number to view its status.',
             status: 403,
             isAuthError: true,
             isNotFound: false,
           });
-          if (isInitialLoad) setLoading(false);
+          setLoading(false);
           setIsRefreshing(false);
           return;
         }
@@ -282,9 +289,6 @@ export default function TrackOrderPage() {
           // Immediately display verified order so Track button works directly!
           setTrackedOrder(localOrder);
           setFetchError(null);
-          if (isInitialLoad) {
-            setLoading(false);
-          }
         }
       }
 
@@ -304,12 +308,12 @@ export default function TrackOrderPage() {
           setLastRefreshedAt(new Date());
         } else {
           const statusCode = res?.status || (res?.isNotFound ? 404 : res?.isAuthError ? 403 : 0);
-          const isAuth = Boolean(res?.isAuthError || statusCode === 401 || statusCode === 403);
-          const isNotFound = Boolean(res?.isNotFound || statusCode === 404);
+          const isAuth = Boolean(res?.isAuthError || statusCode === 401 || statusCode === 403 || res?.requiresVerification);
+          const isNotFound = Boolean((res?.isNotFound || statusCode === 404) && !isAuth);
 
           const errObj = {
             message: isAuth
-              ? 'You are not authorized to view this order.'
+              ? 'Please sign in with the account used to place this order, or verify your registered mobile number to view its status.'
               : res?.error || 'Order not found.',
             status: statusCode,
             isAuthError: isAuth,
@@ -320,15 +324,17 @@ export default function TrackOrderPage() {
             setTrackedOrder(null);
             setFetchError(errObj);
           } else if (isNotFound) {
-            // Prune stale order reference from local storage and recent orders
+            // Prune stale order reference from local storage and recent orders safely
             removeStaleLocalOrder(currentTrackingId);
-            setRecentOrders((prev) =>
-              prev.filter(
-                (o) =>
-                  String(o?.orderId || '').trim().toUpperCase() !==
-                  String(currentTrackingId).trim().toUpperCase()
-              )
-            );
+            setRecentOrders((prev) => {
+              const hasOrder = prev.some(
+                (o) => String(o?.orderId || '').trim().toUpperCase() === String(currentTrackingId).trim().toUpperCase()
+              );
+              if (!hasOrder) return prev;
+              return prev.filter(
+                (o) => String(o?.orderId || '').trim().toUpperCase() !== String(currentTrackingId).trim().toUpperCase()
+              );
+            });
             const active = getActiveOrder();
             if (
               active &&
@@ -351,12 +357,12 @@ export default function TrackOrderPage() {
       } catch (err) {
         console.warn('[TrackOrderPage] Live fetch failed:', err);
         const statusCode = err?.status || err?.statusCode || 0;
-        const isAuth = statusCode === 401 || statusCode === 403 || err?.isAuthError;
-        const isNotFound = statusCode === 404;
+        const isAuth = Boolean(statusCode === 401 || statusCode === 403 || err?.isAuthError || err?.requiresVerification);
+        const isNotFound = Boolean(statusCode === 404 && !isAuth);
 
         let msg = 'Unable to refresh order status. Please try again.';
         if (isAuth) {
-          msg = 'You are not authorized to view this order.';
+          msg = 'Please sign in with the account used to place this order, or verify your registered mobile number to view its status.';
         } else if (isNotFound) {
           msg = 'Order not found.';
         }
@@ -373,13 +379,17 @@ export default function TrackOrderPage() {
           setFetchError(errObj);
         } else if (isNotFound) {
           removeStaleLocalOrder(currentTrackingId);
-          setRecentOrders((prev) =>
-            prev.filter(
+          setRecentOrders((prev) => {
+            const hasOrder = prev.some(
+              (o) => String(o?.orderId || '').trim().toUpperCase() === String(currentTrackingId).trim().toUpperCase()
+            );
+            if (!hasOrder) return prev;
+            return prev.filter(
               (o) =>
                 String(o?.orderId || '').trim().toUpperCase() !==
                 String(currentTrackingId).trim().toUpperCase()
-            )
-          );
+            );
+          });
           const active = getActiveOrder();
           if (
             active &&
@@ -394,19 +404,17 @@ export default function TrackOrderPage() {
         } else if (localOrder && ownership?.isAuthorized) {
           // Keep verified recent order displayed
           setFetchError(null);
-        } else if (isInitialLoad) {
-          setTrackedOrder(null);
-          setFetchError(errObj);
         } else {
+          setTrackedOrder(null);
           setFetchError(errObj);
         }
       } finally {
         isFetchingRef.current = false;
-        if (isInitialLoad) setLoading(false);
+        setLoading(false);
         setIsRefreshing(false);
       }
     },
-    [currentTrackingId, isAuthenticated, customer, findLocalOrder, verifyOrderOwnership]
+    [currentTrackingId, isAuthenticated, findLocalOrder, verifyOrderOwnership]
   );
 
   // Initial load when currentTrackingId or auth state changes
@@ -612,20 +620,38 @@ export default function TrackOrderPage() {
           /* Case 1: An ID was queried but returned error (401/403/404/network) */
           <div className="max-w-lg mx-auto bg-white rounded-3xl border border-surface-border p-8 sm:p-10 text-center space-y-5 shadow-xs">
             {fetchError?.isAuthError ? (
-              /* 401 / 403: Safe Unauthorized display */
+              /* 401 / 403 / Ownership mismatch: Order Verification Required */
               <>
-                <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 border border-rose-200 mx-auto flex items-center justify-center shadow-2xs">
+                <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 mx-auto flex items-center justify-center shadow-2xs">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
-                <div className="space-y-1">
-                  <span className="text-xs font-bold text-rose-600 uppercase tracking-wider block">Access Denied</span>
-                  <h2 className="text-xl font-bold text-primary">You are not authorized to view this order.</h2>
-                  <p className="text-xs text-muted max-w-sm mx-auto">
-                    This order belongs to another registered customer account. Please sign in with the correct account or verify your Order Reference ID.
+                <div className="space-y-2">
+                  <span className="text-xs font-bold text-amber-700 uppercase tracking-wider block">
+                    Order Verification Required
+                  </span>
+                  <h2 className="text-xl font-bold text-primary">
+                    Order Verification Required
+                  </h2>
+                  <p className="text-xs sm:text-sm text-muted max-w-md mx-auto leading-relaxed">
+                    Please sign in with the account used to place this order, or verify your registered mobile number to view its status.
                   </p>
+                  <span className="sr-only">Access Denied: You are not authorized to view this order.</span>
                 </div>
+                {!isAuthenticated && (
+                  <div className="pt-2">
+                    <Link
+                      to="/login"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-light transition-all shadow-xs"
+                    >
+                      <span>Sign In to Your Account</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </Link>
+                  </div>
+                )}
               </>
             ) : fetchError?.isNotFound || fetchError?.status === 404 ? (
               /* 404: Safe Order Not Found */
@@ -640,11 +666,12 @@ export default function TrackOrderPage() {
                     Order Not Available
                   </span>
                   <h2 className="text-xl font-bold text-primary">
-                    Order not found.
+                    Order Not Found
                   </h2>
                   <p className="text-xs text-muted max-w-sm mx-auto">
                     We couldn't find an order with Reference ID <strong className="font-mono text-primary">{currentTrackingId}</strong>. Please check your confirmation receipt.
                   </p>
+                  <span className="sr-only">Order not found.</span>
                 </div>
               </>
             ) : (

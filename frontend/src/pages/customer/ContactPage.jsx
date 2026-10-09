@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Container from '../../components/common/Container.jsx';
 import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig.js';
-import { settingsApi } from '../../services/settingsApi.js';
+import { useSettings } from '../../context/SettingsContext.jsx';
 
 /**
  * Verified Location Configuration for HAPPINESS RESTAURANT
@@ -38,7 +38,7 @@ const RESTAURANT_LOCATION = {
  * - Contact Form: Frontend UI with non-fake submission response ("Contact form is currently unavailable")
  */
 export default function ContactPage() {
-  const [settings, setSettings] = useState(null);
+  const { settings } = useSettings();
   const [formData, setFormData] = useState({
     name: '',
     contactInfo: '',
@@ -46,18 +46,6 @@ export default function ContactPage() {
   });
   const [formStatus, setFormStatus] = useState(null); // { type: 'notice', message: string }
   const [formErrors, setFormErrors] = useState({});
-
-  useEffect(() => {
-    async function loadSettings() {
-      try {
-        const data = await settingsApi.getSettings();
-        setSettings(data);
-      } catch {
-        setSettings(null);
-      }
-    }
-    loadSettings();
-  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -158,7 +146,7 @@ export default function ContactPage() {
                     Official Details
                   </span>
                   <h2 className="text-xl sm:text-2xl font-black text-primary mt-1">
-                    {RESTAURANT_CONFIG.name}
+                    {settings?.restaurantName || RESTAURANT_CONFIG.name}
                   </h2>
                 </div>
 
@@ -190,7 +178,7 @@ export default function ContactPage() {
                     <div>
                       <span className="font-bold text-primary block">Address</span>
                       <p className="text-muted leading-relaxed font-medium">
-                        {RESTAURANT_LOCATION.fullAddress}
+                        {settings?.address || RESTAURANT_LOCATION.fullAddress}
                       </p>
                       <p className="text-[11px] text-muted-light mt-1">
                         <strong className="text-accent font-semibold">Landmark: </strong>
@@ -246,9 +234,11 @@ export default function ContactPage() {
                     <div>
                       <span className="font-bold text-primary block">Opening Hours</span>
                       <p className="text-muted leading-relaxed">
-                        {RESTAURANT_CONFIG.operatingHours.days}
+                        {settings?.operatingDays || RESTAURANT_CONFIG.operatingHours.days}
                         <br />
-                        {RESTAURANT_CONFIG.operatingHours.time}
+                        {settings?.openingTime && settings?.closingTime
+                          ? `${settings.openingTime} – ${settings.closingTime}`
+                          : RESTAURANT_CONFIG.operatingHours.time}
                         <span className="text-[11px] block text-accent font-semibold mt-0.5">
                           Last Kitchen Order: {RESTAURANT_CONFIG.operatingHours.kitchenLastOrder}
                         </span>

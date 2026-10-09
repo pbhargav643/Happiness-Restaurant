@@ -312,12 +312,22 @@ export const orderApi = {
     } catch (err) {
       console.warn(`[orderApi.getOrderById] Backend fetch failed for ${cleanId}:`, err.message);
       const statusCode = err.status || err.statusCode || 0;
-      const isAuthError = statusCode === 401 || statusCode === 403 || err.isAuthError || err.isForbidden;
-      const isNotFound = statusCode === 404;
+      const isAuthError = Boolean(
+        statusCode === 401 ||
+        statusCode === 403 ||
+        err.isAuthError ||
+        err.isForbidden ||
+        err.requiresVerification ||
+        err.data?.requiresVerification
+      );
+      const isNotFound = statusCode === 404 && !isAuthError;
 
       let errorMessage = 'Unable to refresh order status. Please try again.';
       if (isAuthError) {
-        errorMessage = 'You are not authorized to view this order.';
+        // Ensures customer privacy: "You are not authorized to view this order."
+        errorMessage =
+          err.message ||
+          'Please sign in with the account used to place this order, or verify your registered mobile number to view its status.';
       } else if (isNotFound) {
         errorMessage = 'Order not found.';
       }
@@ -328,6 +338,7 @@ export const orderApi = {
         status: statusCode,
         isAuthError,
         isNotFound,
+        requiresVerification: isAuthError,
         error: errorMessage,
       };
     }

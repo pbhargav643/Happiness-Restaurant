@@ -32,14 +32,26 @@ export function SettingsProvider({ children }) {
     fetchSettings();
   }, [fetchSettings]);
 
+  const updateSettings = useCallback(async (payload) => {
+    const updated = await settingsApi.updateSettings(payload);
+    if (updated) {
+      setSettings((prev) => ({
+        ...prev,
+        ...updated,
+      }));
+    }
+    return updated;
+  }, []);
+
   const value = useMemo(
     () => ({
       settings,
       loading,
       isBackendLive,
       refetch: fetchSettings,
+      updateSettings,
     }),
-    [settings, loading, isBackendLive, fetchSettings]
+    [settings, loading, isBackendLive, fetchSettings, updateSettings]
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

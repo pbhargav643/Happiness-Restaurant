@@ -15,15 +15,30 @@ const restaurantSettingsSchema = new mongoose.Schema(
       trim: true,
       default: 'HAPPINESS RESTAURANT',
     },
+    tagline: {
+      type: String,
+      trim: true,
+      default: 'Authentic Delicacies • Online Parcel Pickup',
+    },
     phone: {
       type: String,
       trim: true,
-      default: '',
+      default: '+91 81558 16509',
+    },
+    email: {
+      type: String,
+      trim: true,
+      default: 'contact@happinessrestaurant.com',
     },
     address: {
       type: String,
       trim: true,
-      default: '',
+      default: 'QX8M+J67, Navjivan Colony, Bilimora, Gujarat 396325, India',
+    },
+    operatingDays: {
+      type: String,
+      trim: true,
+      default: 'Monday – Sunday (All Days)',
     },
     pickupEnabled: {
       type: Boolean,

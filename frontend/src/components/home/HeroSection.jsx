@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Container from '../common/Container';
 import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig';
+import { useSettings } from '../../context/SettingsContext';
 
 /**
  * HeroSection Component
@@ -10,6 +11,9 @@ import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig';
  * trust highlights, and a tasteful culinary visual presentation.
  */
 export default function HeroSection() {
+  const { settings } = useSettings();
+  const restaurantName = settings?.restaurantName || RESTAURANT_CONFIG.name;
+
   return (
     <section
       className="relative overflow-hidden bg-secondary py-8 sm:py-12 lg:py-16 border-b border-surface-border"
@@ -40,7 +44,7 @@ export default function HeroSection() {
             {/* Main Headline */}
             <div className="space-y-1 sm:space-y-2">
               <span className="block text-xs sm:text-sm font-bold text-accent tracking-widest uppercase">
-                Welcome to {RESTAURANT_CONFIG.name}
+                Welcome to {restaurantName}
               </span>
               <h1
                 id="hero-heading"

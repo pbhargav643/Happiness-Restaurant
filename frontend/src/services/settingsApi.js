@@ -7,9 +7,12 @@ import { PICKUP_CONFIG } from '../config/pickupConfig.js';
  */
 export const DEFAULT_FRONTEND_SETTINGS = {
   restaurantName: RESTAURANT_CONFIG.name || 'HAPPINESS RESTAURANT',
-  phone: RESTAURANT_CONFIG.contact?.phone || '+91 98765 43210',
+  tagline: RESTAURANT_CONFIG.tagline || 'Authentic Delicacies • Online Parcel Pickup',
+  phone: RESTAURANT_CONFIG.contact?.phone || '+91 81558 16509',
+  email: RESTAURANT_CONFIG.contact?.email || 'contact@happinessrestaurant.com',
   address: RESTAURANT_CONFIG.contact?.address || 'QX8M+J67, Navjivan Colony, Bilimora, Gujarat 396325, India',
   landmark: RESTAURANT_CONFIG.contact?.landmark || 'Rajhans Complex / Opposite L.M.P. School, College Road / Chikhli Road, Bilimora',
+  operatingDays: RESTAURANT_CONFIG.operatingHours?.days || 'Monday – Sunday (All Days)',
   pickupEnabled: true,
   openingTime: PICKUP_CONFIG.openingTime || '11:00',
   closingTime: PICKUP_CONFIG.closingTime || '22:30',
@@ -35,8 +38,12 @@ export const settingsApi = {
         const raw = response.data;
         return {
           restaurantName: raw.restaurantName || DEFAULT_FRONTEND_SETTINGS.restaurantName,
+          tagline: raw.tagline || DEFAULT_FRONTEND_SETTINGS.tagline,
           phone: raw.phone || DEFAULT_FRONTEND_SETTINGS.phone,
+          email: raw.email || DEFAULT_FRONTEND_SETTINGS.email,
           address: raw.address || DEFAULT_FRONTEND_SETTINGS.address,
+          landmark: raw.landmark || DEFAULT_FRONTEND_SETTINGS.landmark,
+          operatingDays: raw.operatingDays || DEFAULT_FRONTEND_SETTINGS.operatingDays,
           pickupEnabled: typeof raw.pickupEnabled === 'boolean' ? raw.pickupEnabled : true,
           openingTime: raw.openingTime || DEFAULT_FRONTEND_SETTINGS.openingTime,
           closingTime: raw.closingTime || DEFAULT_FRONTEND_SETTINGS.closingTime,
@@ -59,6 +66,17 @@ export const settingsApi = {
         error: err.message,
       };
     }
+  },
+
+  /**
+   * Update restaurant settings (Requires Admin Auth)
+   */
+  async updateSettings(updateData) {
+    const response = await api.patch('/admin/settings', updateData);
+    if (response && response.success && response.data) {
+      return response.data;
+    }
+    return response;
   },
 };
 

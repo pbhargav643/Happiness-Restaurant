@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Container from '../../components/common/Container.jsx';
 import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig.js';
+import { useSettings } from '../../context/SettingsContext.jsx';
 
 /**
  * AboutPage Component
@@ -15,6 +16,12 @@ import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig.js';
  * - Dedicated self-pickup parcel collection only
  */
 export default function AboutPage() {
+  const { settings } = useSettings();
+  const operatingDays = settings?.operatingDays || RESTAURANT_CONFIG.operatingHours.days;
+  const operatingTime =
+    settings?.openingTime && settings?.closingTime
+      ? `${settings.openingTime} – ${settings.closingTime}`
+      : RESTAURANT_CONFIG.operatingHours.time;
   const foodValues = [
     {
       id: 'fresh-prep',
@@ -287,8 +294,7 @@ export default function AboutPage() {
                     Kitchen Operating Hours
                   </span>
                   <p className="text-muted text-[11px]">
-                    {RESTAURANT_CONFIG.operatingHours.days} &bull;{' '}
-                    {RESTAURANT_CONFIG.operatingHours.time}
+                    {operatingDays} &bull; {operatingTime}
                   </p>
                 </div>
               </div>
@@ -423,7 +429,7 @@ export default function AboutPage() {
               </div>
 
               <span className="px-3 py-1 rounded-lg bg-primary-light border border-primary-light text-accent text-[11px] font-semibold whitespace-nowrap">
-                Counter Hours: {RESTAURANT_CONFIG.operatingHours.time}
+                Counter Hours: {operatingTime}
               </span>
             </div>
           </div>

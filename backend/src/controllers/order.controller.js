@@ -52,13 +52,15 @@ export const orderController = {
 
       // Customer order ownership protection:
       // If the order was created by an authenticated customer, only that customer can access it.
-      // If the requester is unauthenticated or has a different customer ID, return safe 404.
+      // If the requester is unauthenticated or has a different customer ID, return safe 404 with verification flag.
       if (order.customerId) {
         const callerCustomerId = req.customer?.id;
         if (!callerCustomerId || callerCustomerId.toString() !== order.customerId.toString()) {
           return res.status(404).json({
             success: false,
-            message: 'Order not found',
+            message: 'Please sign in with the account used to place this order, or verify your registered mobile number to view its status.',
+            requiresVerification: true,
+            isAuthError: true,
           });
         }
       }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig';
+import { useSettings } from '../../context/SettingsContext';
 
 /**
  * Brand Component
@@ -9,13 +10,15 @@ import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig';
  * Designed with responsive truncation guards for 320px screens.
  */
 export default function Brand({ compact = false }) {
-  const brandWords = RESTAURANT_CONFIG.name.split(' ');
+  const { settings } = useSettings();
+  const restaurantName = settings?.restaurantName || RESTAURANT_CONFIG.name;
+  const brandWords = restaurantName.split(' ');
 
   return (
     <Link
       to="/"
       className="flex items-center gap-2 sm:gap-2.5 2xl:gap-3 group transition-opacity hover:opacity-95 focus-visible:ring-2 focus-visible:ring-accent rounded-lg p-0.5 sm:p-1 min-w-0"
-      aria-label={`${RESTAURANT_CONFIG.name} Home`}
+      aria-label={`${restaurantName} Home`}
     >
       {/* Brand Icon Emblem */}
       <div className="w-8 h-8 sm:w-9 sm:h-9 2xl:w-10 2xl:h-10 rounded-lg bg-primary flex items-center justify-center text-accent shadow-xs flex-shrink-0 group-hover:scale-105 transition-transform">

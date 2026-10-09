@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Container from '../common/Container';
 import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig';
 import { useCart } from '../../context/CartContext';
+import { useSettings } from '../../context/SettingsContext';
 
 /**
  * Footer Component
@@ -13,6 +14,16 @@ import { useCart } from '../../context/CartContext';
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const { cartTotalCount } = useCart();
+  const { settings } = useSettings();
+
+  const restaurantName = settings?.restaurantName || RESTAURANT_CONFIG.name;
+  const phone = settings?.phone || RESTAURANT_CONFIG.contact?.phone;
+  const address = settings?.address || RESTAURANT_CONFIG.contact?.address;
+  const operatingDays = settings?.operatingDays || RESTAURANT_CONFIG.operatingHours?.days;
+  const operatingTime =
+    settings?.openingTime && settings?.closingTime
+      ? `${settings.openingTime} – ${settings.closingTime}`
+      : RESTAURANT_CONFIG.operatingHours?.time;
 
   return (
     <footer
@@ -29,7 +40,7 @@ export default function Footer() {
             </span>
           </div>
           <span className="text-muted-light text-[11px] text-center sm:text-right">
-            Pickup Counter Hours: {RESTAURANT_CONFIG.operatingHours.time}
+            Pickup Counter Hours: {operatingTime}
           </span>
         </Container>
       </div>
@@ -58,7 +69,7 @@ export default function Footer() {
                 </svg>
               </div>
               <span className="font-extrabold text-base sm:text-lg text-white uppercase tracking-tight">
-                {RESTAURANT_CONFIG.name}
+                {restaurantName}
               </span>
             </div>
 
@@ -146,22 +157,20 @@ export default function Footer() {
             <address className="not-italic space-y-3 text-xs text-muted-light">
               <div>
                 <span className="block text-[11px] font-semibold text-white">Opening & Pickup Hours:</span>
-                <span className="text-muted-light">{RESTAURANT_CONFIG.operatingHours.days}</span>
-                <span className="block text-accent font-medium">{RESTAURANT_CONFIG.operatingHours.time}</span>
+                <span className="text-muted-light">{operatingDays}</span>
+                <span className="block text-accent font-medium">{operatingTime}</span>
               </div>
 
               <div>
                 <span className="block text-[11px] font-semibold text-white">Pickup Inquiries:</span>
                 <span className="text-muted-light">
-                  {RESTAURANT_CONFIG.contact.phone && !RESTAURANT_CONFIG.contact.phone.includes('XXXXX')
-                    ? RESTAURANT_CONFIG.contact.phone
-                    : 'In-Store Pickup Counter'}
+                  {phone && !phone.includes('XXXXX') ? phone : 'In-Store Pickup Counter'}
                 </span>
               </div>
 
               <div>
                 <span className="block text-[11px] font-semibold text-white">Address:</span>
-                <span className="text-muted-light">{RESTAURANT_CONFIG.contact.address}</span>
+                <span className="text-muted-light">{address}</span>
               </div>
             </address>
 

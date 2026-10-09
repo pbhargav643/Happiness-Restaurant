@@ -309,132 +309,132 @@ export default function AdminAnalyticsPage() {
       {/* ============================================================== */}
       {/* 2. TOP METRICS SUMMARY CARDS (Balanced, Iconic, Luxury)       */}
       {/* ============================================================== */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4 items-stretch">
         {/* Total Orders */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl border border-slate-200/90 bg-gradient-to-b from-slate-50/30 to-white p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between h-full min-h-[110px] sm:min-h-[116px] overflow-hidden">
+          <div className="flex items-center justify-between gap-1.5 mb-2 min-w-0">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate" title="Total Orders">
               Total Orders
             </span>
-            <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+            <div className="w-7 h-7 shrink-0 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
             </div>
           </div>
-          <div className="flex items-baseline justify-between mt-1">
-            <span className="text-2xl sm:text-3xl font-black text-slate-900 font-sans tracking-tight">
+          <div className="flex items-center justify-between gap-1.5 mt-auto pt-1 min-w-0">
+            <span className="text-xl sm:text-2xl xl:text-[22px] 2xl:text-2xl font-black text-slate-900 font-sans tracking-tight min-w-0 truncate" title={stats.totalOrders}>
               {stats.totalOrders}
             </span>
-            <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
               Orders
             </span>
           </div>
         </div>
 
         {/* Total Sales */}
-        <div className="bg-white rounded-2xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/30 to-white p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/30 to-white p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between h-full min-h-[110px] sm:min-h-[116px] overflow-hidden">
+          <div className="flex items-center justify-between gap-1.5 mb-2 min-w-0">
+            <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider truncate" title="Total Sales">
               Total Sales
             </span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+            <div className="w-7 h-7 shrink-0 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
               ₹
             </div>
           </div>
-          <div className="flex items-baseline justify-between mt-1">
-            <span className="text-2xl sm:text-3xl font-black text-emerald-900 font-sans tracking-tight">
+          <div className="flex items-center justify-between gap-1.5 mt-auto pt-1 min-w-0">
+            <span className="text-xl sm:text-2xl xl:text-[22px] 2xl:text-2xl font-black text-emerald-900 font-sans tracking-tight min-w-0 truncate" title={`₹${stats.totalSales}`}>
               ₹{stats.totalSales}
             </span>
-            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
               Revenue
             </span>
           </div>
         </div>
 
         {/* Pending Orders */}
-        <div className="bg-white rounded-2xl border border-sky-200/90 bg-gradient-to-b from-sky-50/30 to-white p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-sky-800 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl border border-sky-200/90 bg-gradient-to-b from-sky-50/30 to-white p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between h-full min-h-[110px] sm:min-h-[116px] overflow-hidden">
+          <div className="flex items-center justify-between gap-1.5 mb-2 min-w-0">
+            <span className="text-[11px] font-bold text-sky-800 uppercase tracking-wider truncate" title="Pending Orders">
               Pending Orders
             </span>
-            <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center">
+            <div className="w-7 h-7 shrink-0 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
-          <div className="flex items-baseline justify-between mt-1">
-            <span className="text-2xl sm:text-3xl font-black text-sky-900 font-sans tracking-tight">
+          <div className="flex items-center justify-between gap-1.5 mt-auto pt-1 min-w-0">
+            <span className="text-xl sm:text-2xl xl:text-[22px] 2xl:text-2xl font-black text-sky-900 font-sans tracking-tight min-w-0 truncate" title={stats.pending}>
               {stats.pending}
             </span>
-            <span className="text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
               Placed
             </span>
           </div>
         </div>
 
         {/* Preparing Orders */}
-        <div className="bg-white rounded-2xl border border-amber-200/90 bg-gradient-to-b from-amber-50/30 to-white p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl border border-amber-200/90 bg-gradient-to-b from-amber-50/30 to-white p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between h-full min-h-[110px] sm:min-h-[116px] overflow-hidden">
+          <div className="flex items-center justify-between gap-1.5 mb-2 min-w-0">
+            <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider truncate" title="Preparing Orders">
               Preparing Orders
             </span>
-            <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+            <div className="w-7 h-7 shrink-0 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343a7.975 7.975 0 012.343 5.657c0 2.122-.858 4.156-2.342 5.657z" />
               </svg>
             </div>
           </div>
-          <div className="flex items-baseline justify-between mt-1">
-            <span className="text-2xl sm:text-3xl font-black text-amber-900 font-sans tracking-tight">
+          <div className="flex items-center justify-between gap-1.5 mt-auto pt-1 min-w-0">
+            <span className="text-xl sm:text-2xl xl:text-[22px] 2xl:text-2xl font-black text-amber-900 font-sans tracking-tight min-w-0 truncate" title={stats.preparing}>
               {stats.preparing}
             </span>
-            <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
               Kitchen
             </span>
           </div>
         </div>
 
         {/* Ready Orders */}
-        <div className="bg-white rounded-2xl border border-teal-200/90 bg-gradient-to-b from-teal-50/30 to-white p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-teal-800 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl border border-teal-200/90 bg-gradient-to-b from-teal-50/30 to-white p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between h-full min-h-[110px] sm:min-h-[116px] overflow-hidden">
+          <div className="flex items-center justify-between gap-1.5 mb-2 min-w-0">
+            <span className="text-[11px] font-bold text-teal-800 uppercase tracking-wider truncate" title="Ready Orders">
               Ready Orders
             </span>
-            <div className="w-7 h-7 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center">
+            <div className="w-7 h-7 shrink-0 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
-          <div className="flex items-baseline justify-between mt-1">
-            <span className="text-2xl sm:text-3xl font-black text-teal-900 font-sans tracking-tight">
+          <div className="flex items-center justify-between gap-1.5 mt-auto pt-1 min-w-0">
+            <span className="text-xl sm:text-2xl xl:text-[22px] 2xl:text-2xl font-black text-teal-900 font-sans tracking-tight min-w-0 truncate" title={stats.ready}>
               {stats.ready}
             </span>
-            <span className="text-[10px] font-bold text-teal-700 bg-teal-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-teal-700 bg-teal-100 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
               Counter
             </span>
           </div>
         </div>
 
         {/* Picked Up */}
-        <div className="bg-white rounded-2xl border border-slate-300 p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between col-span-2 sm:col-span-1">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl border border-slate-200/90 bg-gradient-to-b from-slate-50/30 to-white p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between h-full min-h-[110px] sm:min-h-[116px] overflow-hidden">
+          <div className="flex items-center justify-between gap-1.5 mb-2 min-w-0">
+            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider truncate" title="Picked Up">
               Picked Up
             </span>
-            <div className="w-7 h-7 rounded-lg bg-slate-200 text-slate-800 flex items-center justify-center">
+            <div className="w-7 h-7 shrink-0 rounded-lg bg-slate-200 text-slate-800 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
           </div>
-          <div className="flex items-baseline justify-between mt-1">
-            <span className="text-2xl sm:text-3xl font-black text-slate-800 font-sans tracking-tight">
+          <div className="flex items-center justify-between gap-1.5 mt-auto pt-1 min-w-0">
+            <span className="text-xl sm:text-2xl xl:text-[22px] 2xl:text-2xl font-black text-slate-800 font-sans tracking-tight min-w-0 truncate" title={stats.pickedUp}>
               {stats.pickedUp}
             </span>
-            <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
               Done
             </span>
           </div>

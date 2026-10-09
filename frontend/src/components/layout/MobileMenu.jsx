@@ -3,6 +3,7 @@ import { NavLink, Link, useLocation } from 'react-router-dom';
 import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { useSettings } from '../../context/SettingsContext';
 
 /**
  * Navigation Items
@@ -25,6 +26,13 @@ export default function MobileMenu({ isOpen, onClose }) {
   const location = useLocation();
   const { cartTotalCount } = useCart();
   const { customer, isAuthenticated, logout } = useCustomerAuth();
+  const { settings } = useSettings();
+
+  const restaurantName = settings?.restaurantName || RESTAURANT_CONFIG.name;
+  const operatingTime =
+    settings?.openingTime && settings?.closingTime
+      ? `${settings.openingTime} – ${settings.closingTime}`
+      : RESTAURANT_CONFIG.operatingHours?.time;
 
 
   // Close drawer automatically on route transition
@@ -74,7 +82,7 @@ export default function MobileMenu({ isOpen, onClose }) {
         <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <span className="font-bold text-base text-primary uppercase">
-              {RESTAURANT_CONFIG.name}
+              {restaurantName}
             </span>
           </div>
 
@@ -267,7 +275,7 @@ export default function MobileMenu({ isOpen, onClose }) {
         <div className="p-4 border-t border-surface-border bg-secondary/50 text-xs text-muted space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-muted-light">Pickup Hours:</span>
-            <span className="font-medium text-primary">{RESTAURANT_CONFIG.operatingHours.time}</span>
+            <span className="font-medium text-primary">{operatingTime}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-muted-light">Service:</span>

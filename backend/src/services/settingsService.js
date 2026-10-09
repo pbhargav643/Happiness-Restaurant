@@ -5,8 +5,11 @@ import { validatePickupTime } from './orderService.js';
 // Default Singleton Restaurant Settings Configuration
 export const DEFAULT_SETTINGS = {
   restaurantName: 'HAPPINESS RESTAURANT',
-  phone: '+91 98765 43210',
+  tagline: 'Authentic Delicacies • Online Parcel Pickup',
+  phone: '+91 81558 16509',
+  email: 'contact@happinessrestaurant.com',
   address: 'QX8M+J67, Navjivan Colony, Bilimora, Gujarat 396325, India',
+  operatingDays: 'Monday – Sunday (All Days)',
   pickupEnabled: true,
   serviceMode: 'Restaurant Self-Pickup',
   openingTime: '11:00',
@@ -46,6 +49,7 @@ export const settingsService = {
   async getSettings() {
     if (mongoose.connection.readyState !== 1) {
       return {
+        ...DEFAULT_SETTINGS,
         ...memorySettings,
         serviceMode: 'Restaurant Self-Pickup',
       };
@@ -61,6 +65,7 @@ export const settingsService = {
     }
 
     return {
+      ...DEFAULT_SETTINGS,
       ...settings,
       serviceMode: 'Restaurant Self-Pickup',
     };
@@ -99,6 +104,16 @@ export const settingsService = {
       cleanUpdates.restaurantName = updateData.restaurantName.trim();
     }
 
+    // 2b. Validate tagline
+    if (updateData.tagline !== undefined) {
+      if (typeof updateData.tagline !== 'string') {
+        const err = new Error('tagline must be a string');
+        err.statusCode = 400;
+        throw err;
+      }
+      cleanUpdates.tagline = updateData.tagline.trim();
+    }
+
     // 3. Validate phone
     if (updateData.phone !== undefined) {
       if (typeof updateData.phone !== 'string' || !updateData.phone.trim()) {
@@ -109,6 +124,16 @@ export const settingsService = {
       cleanUpdates.phone = updateData.phone.trim();
     }
 
+    // 3b. Validate email
+    if (updateData.email !== undefined) {
+      if (typeof updateData.email !== 'string') {
+        const err = new Error('email must be a string');
+        err.statusCode = 400;
+        throw err;
+      }
+      cleanUpdates.email = updateData.email.trim();
+    }
+
     // 4. Validate address
     if (updateData.address !== undefined) {
       if (typeof updateData.address !== 'string') {
@@ -117,6 +142,16 @@ export const settingsService = {
         throw err;
       }
       cleanUpdates.address = updateData.address.trim();
+    }
+
+    // 4b. Validate operatingDays
+    if (updateData.operatingDays !== undefined) {
+      if (typeof updateData.operatingDays !== 'string') {
+        const err = new Error('operatingDays must be a string');
+        err.statusCode = 400;
+        throw err;
+      }
+      cleanUpdates.operatingDays = updateData.operatingDays.trim();
     }
 
     // 5. Validate pickupEnabled
@@ -177,6 +212,7 @@ export const settingsService = {
         ...cleanUpdates,
       };
       return {
+        ...DEFAULT_SETTINGS,
         ...memorySettings,
         serviceMode: 'Restaurant Self-Pickup',
       };
@@ -192,6 +228,7 @@ export const settingsService = {
       .lean();
 
     return {
+      ...DEFAULT_SETTINGS,
       ...updated,
       serviceMode: 'Restaurant Self-Pickup',
     };
