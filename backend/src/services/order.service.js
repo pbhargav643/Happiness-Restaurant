@@ -1,15 +1,33 @@
 import mongoose from 'mongoose';
 import Order from '../models/Order.js';
+import Table from '../models/Table.js';
+import { tableService } from './table.service.js';
 import MenuItem, { generateSlug } from '../models/MenuItem.js';
 import notificationService from './notificationService.js';
 import { MENU_ITEMS, MENU_CATEGORIES } from '../data/menuData.js';
 
-// Allowed sequential status transitions (Strict Forward Progression)
-const ALLOWED_STATUS_TRANSITIONS = {
+// Allowed sequential status transitions per order type
+export const PICKUP_STATUS_TRANSITIONS = {
   PLACED: ['PREPARING'],
   PREPARING: ['READY'],
   READY: ['PICKED_UP'],
   PICKED_UP: [], // Terminal status: zero transitions allowed
+};
+
+export const DINE_IN_STATUS_TRANSITIONS = {
+  PLACED: ['PREPARING'],
+  PREPARING: ['READY'],
+  READY: ['SERVED'],
+  SERVED: [], // Terminal status: zero transitions allowed
+};
+
+// Unified fallback transitions
+export const ALLOWED_STATUS_TRANSITIONS = {
+  PLACED: ['PREPARING'],
+  PREPARING: ['READY'],
+  READY: ['PICKED_UP', 'SERVED'],
+  PICKED_UP: [],
+  SERVED: [],
 };
 
 // Whitelisted sorting fields to prevent arbitrary MongoDB field injection
@@ -107,9 +125,10 @@ export const orderService = {
   async createOrder(payload, authenticatedCustomerId = null) {
     const { customer, pickup, items, orderType = 'PICKUP' } = payload || {};
 
-    // 1. Order Type Validation (Strictly PICKUP only)
-    if (orderType && String(orderType).toUpperCase() !== 'PICKUP') {
-      const err = new Error('Order type must be strictly "PICKUP". Delivery is not supported.');
+    // 1. Order Type Validation
+    const normalizedType = orderType ? String(orderType).trim().toUpperCase() : 'PICKUP';
+    if (normalizedType !== 'PICKUP' && normalizedType !== 'DINE_IN') {
+      const err = new Error('Order type must be strictly "PICKUP" or "DINE_IN". Delivery is not supported.');
       err.statusCode = 400;
       throw err;
     }
@@ -143,23 +162,51 @@ export const orderService = {
       }
     }
 
-    // 3. Pickup Details Validation
-    if (!pickup || typeof pickup !== 'object') {
-      const err = new Error('Pickup details are required');
-      err.statusCode = 400;
-      throw err;
-    }
+    // 3. Order-Type-Specific Validations
+    let validatedTable = null;
 
-    if (!pickup.date || !validatePickupDate(pickup.date)) {
-      const err = new Error('Valid pickup date is required');
-      err.statusCode = 400;
-      throw err;
-    }
+    if (normalizedType === 'PICKUP') {
+      // Pickup Details Validation
+      if (!pickup || typeof pickup !== 'object') {
+        const err = new Error('Pickup details are required');
+        err.statusCode = 400;
+        throw err;
+      }
 
-    if (!pickup.time || !validatePickupTime(pickup.time)) {
-      const err = new Error('Valid pickup time is required');
-      err.statusCode = 400;
-      throw err;
+      if (!pickup.date || !validatePickupDate(pickup.date)) {
+        const err = new Error('Valid pickup date is required');
+        err.statusCode = 400;
+        throw err;
+      }
+
+      if (!pickup.time || !validatePickupTime(pickup.time)) {
+        const err = new Error('Valid pickup time is required');
+        err.statusCode = 400;
+        throw err;
+      }
+    } else if (normalizedType === 'DINE_IN') {
+      // Dine-in Table Validation
+      const candidateIdentifier = payload.tableId || payload.tableNumber;
+      if (!candidateIdentifier || (typeof candidateIdentifier !== 'string' && typeof candidateIdentifier !== 'object')) {
+        const err = new Error('Table information (tableId or tableNumber) is required for Dine-in orders');
+        err.statusCode = 400;
+        throw err;
+      }
+
+      const tableLookupKey = typeof candidateIdentifier === 'string' ? candidateIdentifier.trim() : String(candidateIdentifier);
+      validatedTable = await tableService.getTableById(tableLookupKey);
+
+      if (!validatedTable) {
+        const err = new Error('The specified table was not found or is invalid');
+        err.statusCode = 404;
+        throw err;
+      }
+
+      if (validatedTable.status !== 'Active') {
+        const err = new Error(`Table "${validatedTable.tableNumber}" is currently Inactive and cannot accept dine-in orders`);
+        err.statusCode = 400;
+        throw err;
+      }
     }
 
     // 4. Items Validation
@@ -298,18 +345,33 @@ export const orderService = {
         mobile: cleanMobile,
         email: customer.email && customer.email.trim() ? customer.email.trim() : null,
       },
-      pickup: {
+      pickup: normalizedType === 'PICKUP' && pickup ? {
         date: pickup.date.trim(),
         time: pickup.time.trim(),
-      },
+      } : null,
+      tableId: validatedTable ? (validatedTable._id || validatedTable.id) : (payload.tableId || null),
+      tableNumber: validatedTable ? validatedTable.tableNumber : (payload.tableNumber || null),
+      instructions: payload.instructions ? String(payload.instructions).trim() : '',
       items: itemSnapshots,
       subtotal: calculatedSubtotal,
-      orderType: 'PICKUP',
+      orderType: normalizedType,
       status: 'PLACED',
       readyTime: null,
     });
 
     const savedOrder = await newOrder.save();
+
+    // Update Table occupancy if Dine-in
+    if (normalizedType === 'DINE_IN' && validatedTable && mongoose.connection.readyState === 1) {
+      try {
+        await Table.findByIdAndUpdate(validatedTable._id || validatedTable.id, {
+          isOccupied: true,
+          activeOrderId: savedOrder._id,
+        });
+      } catch (tblErr) {
+        console.warn(`[OrderService] Non-blocking table occupancy update note:`, tblErr.message);
+      }
+    }
 
     // Trigger ORDER_PLACED notification non-blockingly
     // Strict Failure Isolation: Order creation is guaranteed even if notification dispatch fails
@@ -558,13 +620,6 @@ export const orderService = {
     }
 
     const cleanStatus = newStatus.trim().toUpperCase();
-    const validStatuses = ['PLACED', 'PREPARING', 'READY', 'PICKED_UP'];
-
-    if (!validStatuses.includes(cleanStatus)) {
-      const err = new Error(`Invalid status: "${newStatus}". Allowed statuses: ${validStatuses.join(', ')}`);
-      err.statusCode = 400;
-      throw err;
-    }
 
     if (mongoose.connection.readyState !== 1) return null;
 
@@ -574,14 +629,27 @@ export const orderService = {
     }
 
     const currentStatus = order.status;
+    const isDineIn = (order.orderType || '').toUpperCase() === 'DINE_IN';
+    const validStatuses = isDineIn
+      ? ['PLACED', 'PREPARING', 'READY', 'SERVED']
+      : ['PLACED', 'PREPARING', 'READY', 'PICKED_UP'];
+
+    if (!validStatuses.includes(cleanStatus)) {
+      const err = new Error(`Invalid status: "${newStatus}". Allowed statuses: ${validStatuses.join(', ')}`);
+      err.statusCode = 400;
+      throw err;
+    }
 
     // Idempotent: same status returns order as is
     if (currentStatus === cleanStatus) {
       return order;
     }
 
-    // Enforce sequential progression
-    const allowedNext = ALLOWED_STATUS_TRANSITIONS[currentStatus] || [];
+    // Enforce sequential progression based on order type
+    const allowedNext = isDineIn
+      ? (DINE_IN_STATUS_TRANSITIONS[currentStatus] || [])
+      : (PICKUP_STATUS_TRANSITIONS[currentStatus] || []);
+
     if (!allowedNext.includes(cleanStatus)) {
       const err = new Error(
         `Invalid status transition from "${currentStatus}" to "${cleanStatus}". Allowed next step: ${
@@ -594,6 +662,18 @@ export const orderService = {
 
     order.status = cleanStatus;
     const savedOrder = await order.save();
+
+    // If Dine-in order is SERVED, free table occupancy
+    if (isDineIn && cleanStatus === 'SERVED' && order.tableId && mongoose.connection.readyState === 1) {
+      try {
+        await Table.findByIdAndUpdate(order.tableId, {
+          isOccupied: false,
+          activeOrderId: null,
+        });
+      } catch (tblErr) {
+        console.warn(`[OrderService] Non-blocking table de-occupancy note:`, tblErr.message);
+      }
+    }
 
     // Trigger notifications on status transitions:
     // PLACED -> PREPARING => ORDER_PREPARING

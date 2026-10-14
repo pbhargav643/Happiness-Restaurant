@@ -4,6 +4,7 @@ import AppRoutes from './routes/AppRoutes';
 import { SettingsProvider } from './context/SettingsContext';
 import { MenuProvider } from './context/MenuContext';
 import { CartProvider } from './context/CartContext';
+import { DineInProvider } from './context/DineInContext';
 import { AuthProvider } from './context/AuthContext';
 import { CustomerAuthProvider } from './context/CustomerAuthContext';
 
@@ -19,7 +20,9 @@ export default function App() {
           <SettingsProvider>
             <MenuProvider>
               <CartProvider>
-                <AppRoutes />
+                <DineInProvider>
+                  <AppRoutes />
+                </DineInProvider>
               </CartProvider>
             </MenuProvider>
           </SettingsProvider>

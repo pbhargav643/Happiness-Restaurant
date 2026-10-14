@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Container from '../../components/common/Container.jsx';
 import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig.js';
 import { useSettings } from '../../context/SettingsContext.jsx';
+import contactApi from '../../services/contactApi.js';
 
 /**
  * Verified Location Configuration for HAPPINESS RESTAURANT
@@ -44,8 +45,9 @@ export default function ContactPage() {
     contactInfo: '',
     message: '',
   });
-  const [formStatus, setFormStatus] = useState(null); // { type: 'notice', message: string }
+  const [formStatus, setFormStatus] = useState(null); // { type: 'success' | 'error' | 'notice', message: string }
   const [formErrors, setFormErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -55,27 +57,116 @@ export default function ContactPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Guard against concurrent double submissions
+    if (isSubmitting) return;
+
     const errors = {};
-    if (!formData.name.trim()) errors.name = 'Please enter your name';
-    if (!formData.contactInfo.trim())
+    const cleanName = formData.name.trim();
+    const cleanContact = formData.contactInfo.trim();
+    const cleanMessage = formData.message.trim();
+
+    // 1. Name validation
+    if (!cleanName) {
+      errors.name = 'Please enter your name';
+    } else if (cleanName.length < 2) {
+      errors.name = 'Name must be at least 2 characters';
+    } else if (cleanName.length > 100) {
+      errors.name = 'Name cannot exceed 100 characters';
+    }
+
+    // 2. Mobile / Email validation
+    const isEmail = /^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(cleanContact);
+    const cleanPhoneDigits = cleanContact.replace(/\D/g, '');
+    const tenDigitPhone =
+      cleanPhoneDigits.length === 12 && cleanPhoneDigits.startsWith('91')
+        ? cleanPhoneDigits.slice(2)
+        : cleanPhoneDigits.length === 11 && cleanPhoneDigits.startsWith('0')
+        ? cleanPhoneDigits.slice(1)
+        : cleanPhoneDigits;
+    const isIndianPhone = /^[6-9]\d{9}$/.test(tenDigitPhone);
+
+    if (!cleanContact) {
       errors.contactInfo = 'Please enter your mobile number or email';
-    if (!formData.message.trim()) errors.message = 'Please enter your message';
+    } else if (cleanContact.length > 100) {
+      errors.contactInfo = 'Contact info cannot exceed 100 characters';
+    } else if (!isEmail && !isIndianPhone) {
+      errors.contactInfo = 'Please enter a valid 10-digit mobile number or email address';
+    }
+
+    // 3. Message validation
+    if (!cleanMessage) {
+      errors.message = 'Please enter your message';
+    } else if (cleanMessage.length < 5) {
+      errors.message = 'Message must be at least 5 characters';
+    } else if (cleanMessage.length > 2000) {
+      errors.message = 'Message cannot exceed 2000 characters';
+    }
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
 
-    // Do NOT pretend a message was sent.
-    // Show a professional non-fake notice that the form is currently unavailable.
-    setFormStatus({
-      type: 'notice',
-      message:
-        'Contact form is currently unavailable. Please visit our restaurant counter for direct assistance.',
-    });
+    setFormErrors({});
+    setIsSubmitting(true);
+    setFormStatus(null);
+
+    try {
+      const res = await contactApi.submitContactMessage({
+        name: cleanName,
+        contactInfo: cleanContact,
+        message: cleanMessage,
+      });
+
+      if (res && res.success) {
+        setFormData({ name: '', contactInfo: '', message: '' });
+        setFormStatus({
+          type: 'success',
+          message:
+            res.message ||
+            'Thank you! Your message has been sent successfully. We will get back to you shortly.',
+        });
+      } else {
+        setFormStatus({
+          type: 'error',
+          message:
+            res?.message ||
+            'Contact form is currently unavailable. Please visit our restaurant counter for direct assistance.',
+        });
+      }
+    } catch (err) {
+      console.warn('Contact form submission error:', err);
+      let userFriendlyMessage =
+        'Contact form is currently unavailable. Please visit our restaurant counter for direct assistance.';
+
+      if (err?.status === 429) {
+        userFriendlyMessage =
+          'Too many requests. Please wait a moment before sending another message, or visit our restaurant counter for direct assistance.';
+      } else if (err?.status === 400 && err?.message && !err.message.includes('Error:') && !err.message.includes('stack')) {
+        userFriendlyMessage = err.message;
+      } else if (
+        err?.message &&
+        (err.message.includes('reach the restaurant server') ||
+          err.message.includes('timed out') ||
+          err.message.includes('network') ||
+          err.status === 0)
+      ) {
+        userFriendlyMessage =
+          'Unable to connect to the restaurant server. Please check your internet connection or visit our restaurant counter for direct assistance.';
+      } else if (err?.message && !err.message.includes('Error:') && !err.message.includes('Mongo') && !err.message.includes('at ')) {
+        userFriendlyMessage = err.message;
+      }
+
+      setFormStatus({
+        type: 'error',
+        message: userFriendlyMessage,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -312,28 +403,77 @@ export default function ContactPage() {
 
                 {formStatus && (
                   <div
-                    className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm flex items-start gap-3"
+                    className={`mb-6 p-4 rounded-xl text-xs sm:text-sm flex items-start gap-3 transition-all ${
+                      formStatus.type === 'success'
+                        ? 'bg-emerald-50 border border-emerald-200 text-emerald-900'
+                        : formStatus.type === 'error'
+                        ? 'bg-rose-50 border border-rose-200 text-rose-900'
+                        : 'bg-amber-50 border border-amber-200 text-amber-900'
+                    }`}
                     role="status"
                     aria-live="polite"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-5 h-5 text-accent flex-shrink-0 mt-0.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <div className="leading-relaxed">
-                      <strong className="font-semibold block">Notice:</strong>
+                    {formStatus.type === 'success' ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        aria-hidden="true"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : formStatus.type === 'error' ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        aria-hidden="true"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5 text-accent flex-shrink-0 mt-0.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    )}
+                    <div className="leading-relaxed flex-1">
+                      <strong className="font-semibold block capitalize">
+                        {formStatus.type === 'success'
+                          ? 'Success:'
+                          : formStatus.type === 'error'
+                          ? 'Error:'
+                          : 'Notice:'}
+                      </strong>
                       {formStatus.message}
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormStatus(null)}
+                      className="text-current opacity-60 hover:opacity-100 transition-opacity p-0.5 ml-2 cursor-pointer"
+                      aria-label="Dismiss alert"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
                 )}
 
@@ -352,15 +492,19 @@ export default function ContactPage() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
+                      disabled={isSubmitting}
+                      aria-required="true"
+                      aria-invalid={Boolean(formErrors.name)}
+                      aria-describedby={formErrors.name ? 'contact-name-error' : undefined}
                       placeholder="Your full name"
-                      className={`w-full px-4 py-3 rounded-xl border text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-accent ${
+                      className={`w-full px-4 py-3 rounded-xl border text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-accent disabled:bg-slate-50 disabled:cursor-not-allowed disabled:text-muted ${
                         formErrors.name
                           ? 'border-red-400 bg-red-50/20'
                           : 'border-surface-border bg-white text-primary'
                       }`}
                     />
                     {formErrors.name && (
-                      <p className="text-[11px] text-red-500 mt-1 font-medium">
+                      <p id="contact-name-error" className="text-[11px] text-red-500 mt-1 font-medium" role="alert">
                         {formErrors.name}
                       </p>
                     )}
@@ -380,15 +524,19 @@ export default function ContactPage() {
                       name="contactInfo"
                       value={formData.contactInfo}
                       onChange={handleInputChange}
+                      disabled={isSubmitting}
+                      aria-required="true"
+                      aria-invalid={Boolean(formErrors.contactInfo)}
+                      aria-describedby={formErrors.contactInfo ? 'contact-info-error' : undefined}
                       placeholder="Your mobile number or email address"
-                      className={`w-full px-4 py-3 rounded-xl border text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-accent ${
+                      className={`w-full px-4 py-3 rounded-xl border text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-accent disabled:bg-slate-50 disabled:cursor-not-allowed disabled:text-muted ${
                         formErrors.contactInfo
                           ? 'border-red-400 bg-red-50/20'
                           : 'border-surface-border bg-white text-primary'
                       }`}
                     />
                     {formErrors.contactInfo && (
-                      <p className="text-[11px] text-red-500 mt-1 font-medium">
+                      <p id="contact-info-error" className="text-[11px] text-red-500 mt-1 font-medium" role="alert">
                         {formErrors.contactInfo}
                       </p>
                     )}
@@ -396,27 +544,36 @@ export default function ContactPage() {
 
                   {/* Message */}
                   <div>
-                    <label
-                      htmlFor="contact-message"
-                      className="block text-xs font-bold text-primary uppercase tracking-wider mb-1.5"
-                    >
-                      Message <span className="text-red-500">*</span>
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label
+                        htmlFor="contact-message"
+                        className="block text-xs font-bold text-primary uppercase tracking-wider"
+                      >
+                        Message <span className="text-red-500">*</span>
+                      </label>
+                      <span className="text-[10px] text-muted-light font-medium" aria-live="polite">
+                        {formData.message.length}/2000
+                      </span>
+                    </div>
                     <textarea
                       id="contact-message"
                       name="message"
                       rows={4}
                       value={formData.message}
                       onChange={handleInputChange}
+                      disabled={isSubmitting}
+                      aria-required="true"
+                      aria-invalid={Boolean(formErrors.message)}
+                      aria-describedby={formErrors.message ? 'contact-message-error' : undefined}
                       placeholder="How can we help you with your order or parcel collection?"
-                      className={`w-full px-4 py-3 rounded-xl border text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-accent ${
+                      className={`w-full px-4 py-3 rounded-xl border text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-accent disabled:bg-slate-50 disabled:cursor-not-allowed disabled:text-muted ${
                         formErrors.message
                           ? 'border-red-400 bg-red-50/20'
                           : 'border-surface-border bg-white text-primary'
                       }`}
                     />
                     {formErrors.message && (
-                      <p className="text-[11px] text-red-500 mt-1 font-medium">
+                      <p id="contact-message-error" className="text-[11px] text-red-500 mt-1 font-medium" role="alert">
                         {formErrors.message}
                       </p>
                     )}
@@ -426,9 +583,21 @@ export default function ContactPage() {
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs sm:text-sm font-bold transition-all shadow-xs focus-visible:ring-2 focus-visible:ring-accent"
+                      disabled={isSubmitting}
+                      aria-busy={isSubmitting}
+                      className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs sm:text-sm font-bold transition-all shadow-xs focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                     >
-                      Send Message
+                      {isSubmitting ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Sending Message...</span>
+                        </>
+                      ) : (
+                        <span>Send Message</span>
+                      )}
                     </button>
                   </div>
                 </form>

@@ -25,6 +25,12 @@ import CustomerAccountPage from '../pages/customer/CustomerAccountPage';
 import ReviewsPage from '../pages/customer/ReviewsPage';
 import ProtectedCustomerRoute from './ProtectedCustomerRoute';
 
+// Customer Dine-in Ordering Flow Pages (Phase 3)
+import DineInEntryPage from '../pages/customer/DineInEntryPage';
+import DineInMenuPage from '../pages/customer/DineInMenuPage';
+import DineInCartPage from '../pages/customer/DineInCartPage';
+import DineInCheckoutPage from '../pages/customer/DineInCheckoutPage';
+
 // Lazy-loaded media-heavy secondary routes (Code-splitting)
 const GalleryPage = React.lazy(() => import('../pages/customer/GalleryPage'));
 
@@ -58,6 +64,13 @@ export default function CustomerRoutes() {
       <Route path="/menu/item/:itemId" element={<FoodItemDetailPage />} />
       <Route path="/cart" element={<CartPage />} />
       <Route path="/checkout" element={<CheckoutPage />} />
+
+      {/* Customer Dine-in Ordering Flow (Phase 3) */}
+      <Route path="/dine-in" element={<DineInEntryPage />} />
+      <Route path="/dine-in/menu" element={<DineInMenuPage />} />
+      <Route path="/dine-in/cart" element={<DineInCartPage />} />
+      <Route path="/dine-in/checkout" element={<DineInCheckoutPage />} />
+
       <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
       <Route
         path="/orders"
@@ -97,7 +110,6 @@ export default function CustomerRoutes() {
       />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/reviews" element={<ReviewsPage />} />
-      <Route path="reviews" element={<ReviewsPage />} />
       <Route path="/faq" element={<FaqPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />

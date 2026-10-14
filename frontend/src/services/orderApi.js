@@ -108,11 +108,15 @@ export function normalizeBackendOrder(order) {
   });
 
   const totalCount = items.reduce((sum, it) => sum + it.quantity, 0);
+  const isDineIn = (order.orderType || '').toUpperCase() === 'DINE_IN';
 
   return {
     _id: order._id,
     orderId: order.orderId,
     orderType: order.orderType || 'PICKUP',
+    tableId: order.tableId || null,
+    tableNumber: order.tableNumber || null,
+    instructions: order.instructions || '',
     status: order.status || 'PLACED',
     subtotal: Number(order.subtotal) || 0,
     readyTime: order.readyTime || null,
@@ -124,17 +128,23 @@ export function normalizeBackendOrder(order) {
       phone: rawCustomer.mobile || rawCustomer.phone || '',
       email: rawCustomer.email || null,
     },
-    pickup: {
-      date: rawPickup.date || '',
-      dateFormatted: rawPickup.date ? formatDateReadable(rawPickup.date) : '',
-      time: rawPickup.time || '',
-      timeFormatted: rawPickup.time ? formatTime12h(rawPickup.time) : '',
-      serviceMode: 'Restaurant Self-Pickup',
-    },
+    pickup: isDineIn
+      ? {
+          serviceMode: 'Dine-In Table Service',
+          tableNumber: order.tableNumber,
+        }
+      : {
+          date: rawPickup.date || '',
+          dateFormatted: rawPickup.date ? formatDateReadable(rawPickup.date) : '',
+          time: rawPickup.time || '',
+          timeFormatted: rawPickup.time ? formatTime12h(rawPickup.time) : '',
+          serviceMode: 'Restaurant Self-Pickup',
+        },
     items,
     totalCount,
-    pickupNotice:
-      'Please collect your parcel from the restaurant counter at your selected pickup time. No home delivery is available.',
+    pickupNotice: isDineIn
+      ? `Table service at ${order.tableNumber || 'your table'}. Dishes will be freshly served by staff.`
+      : 'Please collect your parcel from the restaurant counter at your selected pickup time. No home delivery is available.',
   };
 }
 
@@ -201,7 +211,17 @@ export const orderApi = {
       throw new Error('Please check your order details.');
     }
 
-    const { customer, pickup, items } = orderData;
+    const {
+      customer = {},
+      pickup = {},
+      items = [],
+      orderType = 'PICKUP',
+      tableId,
+      tableNumber,
+      instructions,
+    } = orderData;
+
+    const isDineIn = (orderType || '').toUpperCase() === 'DINE_IN';
 
     // 1. Client-Side Pre-Validation for required fields
     if (!customer?.name || !customer.name.trim()) {
@@ -213,12 +233,18 @@ export const orderApi = {
       throw new Error('Please enter a valid 10-digit mobile number.');
     }
 
-    if (!pickup?.date) {
-      throw new Error('Please select a valid pickup date.');
-    }
+    if (!isDineIn) {
+      if (!pickup?.date) {
+        throw new Error('Please select a valid pickup date.');
+      }
 
-    if (!pickup?.time) {
-      throw new Error('Please select an available pickup time slot.');
+      if (!pickup?.time) {
+        throw new Error('Please select an available pickup time slot.');
+      }
+    } else {
+      if (!tableId && !tableNumber) {
+        throw new Error('Table information is required for Dine-in orders.');
+      }
     }
 
     if (!Array.isArray(items) || items.length === 0) {
@@ -236,18 +262,25 @@ export const orderApi = {
     });
 
     const payload = {
+      orderType: isDineIn ? 'DINE_IN' : 'PICKUP',
       customer: {
         name: customer.name.trim(),
         mobile: cleanMobile,
         ...(customer.email && customer.email.trim() ? { email: customer.email.trim() } : {}),
       },
-      pickup: {
+      items: payloadItems,
+    };
+
+    if (isDineIn) {
+      if (tableId) payload.tableId = tableId;
+      if (tableNumber) payload.tableNumber = tableNumber;
+      if (instructions) payload.instructions = instructions;
+    } else {
+      payload.pickup = {
         date: String(pickup.date).trim(),
         time: String(pickup.time).trim(),
-      },
-      items: payloadItems,
-      orderType: 'PICKUP', // Strict Self-Pickup
-    };
+      };
+    }
 
     // 3. Send POST Request to centralized backend (attaches customer token if authenticated)
     const customerToken = customerStorage.getToken();

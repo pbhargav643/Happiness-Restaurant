@@ -16,6 +16,8 @@ const AdminSettingsPage = lazy(() => import('../pages/admin/AdminSettingsPage'))
 const AdminAnalyticsPage = lazy(() => import('../pages/admin/AdminAnalyticsPage'));
 const AdminAlertsPage = lazy(() => import('../pages/admin/AdminAlertsPage'));
 const AdminReviewsPage = lazy(() => import('../pages/admin/AdminReviewsPage'));
+const AdminTablesPage = lazy(() => import('../pages/admin/AdminTablesPage'));
+const AdminTableQRCodesPage = lazy(() => import('../pages/admin/AdminTableQRCodesPage'));
 
 function AdminSuspenseFallback() {
   return (
@@ -97,6 +99,22 @@ export default function AdminRoutes() {
         }
       />
       <Route
+        path="tables"
+        element={
+          <Suspense fallback={<AdminSuspenseFallback />}>
+            <AdminTablesPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="tables/qr"
+        element={
+          <Suspense fallback={<AdminSuspenseFallback />}>
+            <AdminTableQRCodesPage />
+          </Suspense>
+        }
+      />
+      <Route
         path="settings"
         element={
           <Suspense fallback={<AdminSuspenseFallback />}>
@@ -122,14 +140,6 @@ export default function AdminRoutes() {
       />
       <Route
         path="reviews"
-        element={
-          <Suspense fallback={<AdminSuspenseFallback />}>
-            <AdminReviewsPage />
-          </Suspense>
-        }
-      />
-      <Route
-        path="/admin/reviews"
         element={
           <Suspense fallback={<AdminSuspenseFallback />}>
             <AdminReviewsPage />

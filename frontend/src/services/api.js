@@ -105,9 +105,22 @@ export function normalizeApiError(error, response = null) {
 export async function apiRequest(endpoint, options = {}) {
   const { timeout = DEFAULT_TIMEOUT_MS, headers = {}, ...customOptions } = options;
 
+  let base = API_BASE_URL;
+  if (
+    typeof window !== 'undefined' &&
+    window.location &&
+    window.location.hostname &&
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1'
+  ) {
+    if (base.includes('localhost:5000') || base.includes('127.0.0.1:5000')) {
+      base = base.replace(/localhost:5000|127\.0\.0\.1:5000/, `${window.location.hostname}:5000`);
+    }
+  }
+
   const url = endpoint.startsWith('http')
     ? endpoint
-    : `${API_BASE_URL.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+    : `${base.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
 
   const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
   const timeoutId = controller ? setTimeout(() => controller.abort(), timeout) : null;

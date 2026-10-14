@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Container from '../../components/common/Container';
 import MenuHeader from '../../components/menu/MenuHeader';
 import MenuSidebar from '../../components/menu/MenuSidebar';
@@ -21,7 +21,30 @@ import { findCanonicalCategory, isItemInCategory } from '../../services/menuApi'
  */
 export default function MenuPage() {
   const { category: urlCategory } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // Intercept Phase 2 QR Code Destination (/menu?table=...&tableId=...&mode=dine_in)
+  // and smoothly hand over to the Dine-In Entry flow without disrupting parcel pickup
+  const urlMode = searchParams.get('mode');
+  const urlTable =
+    searchParams.get('table') ||
+    searchParams.get('tableNumber') ||
+    searchParams.get('table_number');
+  const urlTableId =
+    searchParams.get('tableId') ||
+    searchParams.get('table_id') ||
+    searchParams.get('id');
+
+  useEffect(() => {
+    if (urlMode === 'dine_in' || urlTable || urlTableId) {
+      const params = new URLSearchParams();
+      if (urlTable) params.set('table', urlTable);
+      if (urlTableId) params.set('tableId', urlTableId);
+      if (urlMode) params.set('mode', urlMode);
+      navigate(`/dine-in?${params.toString()}`, { replace: true });
+    }
+  }, [urlMode, urlTable, urlTableId, navigate]);
 
   // Connect to live backend Menu API via MenuContext
   const { items: allMenuItems, loading, error, refetch } = useMenu();

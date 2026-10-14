@@ -72,10 +72,11 @@ export function validateOrderPlacement(req, res, next) {
   const { customer, pickup, items, orderType } = req.body || {};
 
   // 1. Order Type
-  if (orderType && String(orderType).trim().toUpperCase() !== 'PICKUP') {
+  const normalizedType = orderType ? String(orderType).trim().toUpperCase() : 'PICKUP';
+  if (normalizedType !== 'PICKUP' && normalizedType !== 'DINE_IN') {
     return res.status(400).json({
       success: false,
-      message: 'Order type must be strictly "PICKUP". Delivery is not supported.',
+      message: 'Order type must be strictly "PICKUP" or "DINE_IN". Delivery is not supported.',
     });
   }
 
@@ -132,27 +133,39 @@ export function validateOrderPlacement(req, res, next) {
     }
   }
 
-  // 3. Pickup Schedule
-  if (!pickup || typeof pickup !== 'object' || Array.isArray(pickup)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Pickup details are required and must be an object',
-    });
-  }
+  // 3. Order-Type-Specific Schedule or Table Validation
+  if (normalizedType === 'PICKUP') {
+    // Pickup Schedule
+    if (!pickup || typeof pickup !== 'object' || Array.isArray(pickup)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Pickup details are required and must be an object',
+      });
+    }
 
-  const { date, time } = pickup;
-  if (!date || typeof date !== 'string' || !DATE_REGEX.test(date.trim())) {
-    return res.status(400).json({
-      success: false,
-      message: 'Valid pickup date is required in YYYY-MM-DD format',
-    });
-  }
+    const { date, time } = pickup;
+    if (!date || typeof date !== 'string' || !DATE_REGEX.test(date.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid pickup date is required in YYYY-MM-DD format',
+      });
+    }
 
-  if (!time || typeof time !== 'string' || !TIME_REGEX.test(time.trim())) {
-    return res.status(400).json({
-      success: false,
-      message: 'Valid pickup time is required (e.g. 19:30 or 7:30 PM)',
-    });
+    if (!time || typeof time !== 'string' || !TIME_REGEX.test(time.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid pickup time is required (e.g. 19:30 or 7:30 PM)',
+      });
+    }
+  } else if (normalizedType === 'DINE_IN') {
+    // Dine-in Table Validation
+    const { tableId, tableNumber } = req.body || {};
+    if ((!tableId || !String(tableId).trim()) && (!tableNumber || !String(tableNumber).trim())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Table information (tableId or tableNumber) is required for Dine-in orders',
+      });
+    }
   }
 
   // 4. Items List

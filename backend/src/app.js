@@ -10,6 +10,8 @@ import settingsRoutes from './routes/settings.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import customerOrderRoutes from './routes/customer.order.routes.js';
 import reviewRoutes from './routes/review.routes.js';
+import contactRoutes from './routes/contact.routes.js';
+import tableRoutes from './routes/table.routes.js';
 import securityHeaders from './middleware/securityHeaders.js';
 import mongoSanitizer from './middleware/mongoSanitizer.js';
 import { apiRateLimiter } from './middleware/rateLimiter.js';
@@ -83,6 +85,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/tables', tableRoutes);
 
 // 404 Route Handler
 app.use((req, res) => {

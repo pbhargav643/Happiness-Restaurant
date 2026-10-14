@@ -415,13 +415,20 @@ export default function AdminOrdersPage() {
                     <tr key={order.orderId} className="hover:bg-secondary/30 transition-colors">
                       {/* Order ID */}
                       <td className="py-3.5 px-4 font-mono font-extrabold text-primary">
-                        <Link
-                          to={`/admin/orders/${order.orderId}`}
-                          className="hover:text-accent transition-colors"
-                          title={`Manage order ${order.orderId}`}
-                        >
-                          {order.orderId}
-                        </Link>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Link
+                            to={`/admin/orders/${order.orderId}`}
+                            className="hover:text-accent transition-colors"
+                            title={`Manage order ${order.orderId}`}
+                          >
+                            {order.orderId}
+                          </Link>
+                          {order.orderType === 'DINE_IN' && (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-amber-100 text-amber-900 border border-amber-300">
+                              Dine-in
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Customer Details */}
@@ -434,14 +441,25 @@ export default function AdminOrdersPage() {
                         </span>
                       </td>
 
-                      {/* Pickup Schedule */}
+                      {/* Schedule / Table */}
                       <td className="py-3.5 px-4">
-                        <span className="text-primary font-medium block">
-                          {order.pickup?.dateFormatted || order.pickup?.date}
-                        </span>
-                        <span className="font-extrabold text-accent">
-                          {order.pickup?.timeFormatted || order.pickup?.time}
-                        </span>
+                        {order.orderType === 'DINE_IN' ? (
+                          <div>
+                            <span className="font-extrabold text-primary flex items-center gap-1">
+                              <span className="text-accent">&#9679;</span> {order.tableNumber || 'Table'}
+                            </span>
+                            <span className="text-[11px] text-muted block">Dine-in Service</span>
+                          </div>
+                        ) : (
+                          <div>
+                            <span className="text-primary font-medium block">
+                              {order.pickup?.dateFormatted || order.pickup?.date}
+                            </span>
+                            <span className="font-extrabold text-accent">
+                              {order.pickup?.timeFormatted || order.pickup?.time}
+                            </span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Ready Time */}
@@ -515,21 +533,35 @@ export default function AdminOrdersPage() {
                       <p className="font-bold text-primary">{order.customer?.name || 'Guest'}</p>
                       <p className="text-[11px] text-muted font-mono">+91 {order.customer?.phone || order.customer?.mobile}</p>
                     </div>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      PICKUP
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                      order.orderType === 'DINE_IN'
+                        ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                        : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    }`}>
+                      {order.orderType === 'DINE_IN' ? `DINE-IN (${order.tableNumber || 'TABLE'})` : 'PICKUP'}
                     </span>
                   </div>
 
                   {/* Schedule & Pricing Summary */}
                   <div className="grid grid-cols-2 gap-2 bg-secondary/50 p-2.5 rounded-xl text-xs">
                     <div>
-                      <span className="text-[10px] font-bold text-muted uppercase block">Pickup Slot</span>
-                      <span className="font-semibold text-primary block">
-                        {order.pickup?.dateFormatted || order.pickup?.date}
+                      <span className="text-[10px] font-bold text-muted uppercase block">
+                        {order.orderType === 'DINE_IN' ? 'Table Service' : 'Pickup Slot'}
                       </span>
-                      <span className="font-extrabold text-accent">
-                        {order.pickup?.timeFormatted || order.pickup?.time}
-                      </span>
+                      {order.orderType === 'DINE_IN' ? (
+                        <span className="font-extrabold text-accent block">
+                          {order.tableNumber || 'Dine-In Table'}
+                        </span>
+                      ) : (
+                        <>
+                          <span className="font-semibold text-primary block">
+                            {order.pickup?.dateFormatted || order.pickup?.date}
+                          </span>
+                          <span className="font-extrabold text-accent">
+                            {order.pickup?.timeFormatted || order.pickup?.time}
+                          </span>
+                        </>
+                      )}
                     </div>
                     <div className="text-right">
                       <span className="text-[10px] font-bold text-muted uppercase block">Total</span>

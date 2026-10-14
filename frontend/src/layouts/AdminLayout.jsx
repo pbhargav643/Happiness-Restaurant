@@ -37,6 +37,17 @@ const NAV_LINKS = [
     ),
   },
   {
+    name: 'Table Management',
+    path: '/admin/tables',
+    end: false,
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="16" rx="2" strokeWidth="2" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M10 20V10" />
+      </svg>
+    ),
+  },
+  {
     name: 'Analytics & Reports',
     path: '/admin/analytics',
     end: false,
@@ -109,8 +120,8 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-100 text-primary overflow-x-hidden font-sans">
-      {/* DESKTOP SIDEBAR (Visible >= md screens) */}
-      <aside className="hidden md:flex w-64 bg-primary text-white flex-col justify-between flex-shrink-0 p-5 border-r border-primary-light/40 md:fixed md:inset-y-0 md:left-0 z-30 overflow-y-auto">
+      {/* DESKTOP SIDEBAR (Visible >= md screens, hidden during print) */}
+      <aside className="hidden md:flex print:hidden w-64 bg-primary text-white flex-col justify-between flex-shrink-0 p-5 border-r border-primary-light/40 md:fixed md:inset-y-0 md:left-0 z-30 overflow-y-auto">
         <div className="space-y-6">
           {/* Admin Brand */}
           <div className="flex items-center space-x-3 pb-4 border-b border-primary-light/40">
@@ -231,9 +242,9 @@ export default function AdminLayout() {
       )}
 
       {/* MAIN ADMIN CONTENT WRAPPER */}
-      <div className="flex-1 flex flex-col min-w-0 md:pl-64">
-        {/* Admin Topbar */}
-        <header className="h-16 bg-white border-b border-surface-border px-4 sm:px-8 flex items-center justify-between shadow-2xs">
+      <div className="flex-1 flex flex-col min-w-0 md:pl-64 print:pl-0">
+        {/* Admin Topbar (Hidden during print) */}
+        <header className="h-16 bg-white border-b border-surface-border px-4 sm:px-8 flex items-center justify-between shadow-2xs print:hidden">
           <div className="flex items-center gap-3">
             {/* Mobile Hamburger Toggle */}
             <button
@@ -291,8 +302,8 @@ export default function AdminLayout() {
           </div>
         </header>
 
-        {/* Informative banner regarding authenticated operations */}
-        <div className="bg-slate-900 text-slate-200 border-b border-slate-800 px-4 sm:px-8 py-2 text-[11px] flex items-center justify-between gap-2">
+        {/* Informative banner regarding authenticated operations (Hidden during print) */}
+        <div className="bg-slate-900 text-slate-200 border-b border-slate-800 px-4 sm:px-8 py-2 text-[11px] flex items-center justify-between gap-2 print:hidden">
           <span>
             <strong>Admin Operations:</strong> Secure Session Active &bull; Role: <strong>{admin?.role || 'ADMIN'}</strong> &bull; Changes are persisted directly to MongoDB.
           </span>
@@ -303,7 +314,7 @@ export default function AdminLayout() {
 
 
         {/* Viewport for Child Route Content */}
-        <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-8 print:p-0 overflow-y-auto">
           <Outlet />
         </main>
       </div>

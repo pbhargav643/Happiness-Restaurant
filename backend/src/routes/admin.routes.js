@@ -4,6 +4,7 @@ import { orderController } from '../controllers/orderController.js';
 import { settingsController } from '../controllers/settingsController.js';
 import { notificationController } from '../controllers/notificationController.js';
 import { reviewController } from '../controllers/review.controller.js';
+import { tableController } from '../controllers/table.controller.js';
 import { authenticateAdmin } from '../middleware/authMiddleware.js';
 import handleImageUpload from '../middleware/imageUpload.js';
 
@@ -85,5 +86,26 @@ router.get('/reviews', reviewController.getAdminReviews);
 
 // DELETE /api/admin/reviews/:reviewId - Permanently delete a single review
 router.delete('/reviews/:reviewId', reviewController.deleteReview);
+
+/**
+ * Admin Table Management Endpoints (PROTECTED)
+ */
+// GET /api/admin/tables - List tables with summary metrics, filtering, search, and sorting
+router.get('/tables', tableController.getTables);
+
+// POST /api/admin/tables - Create a new dining table
+router.post('/tables', tableController.createTable);
+
+// GET /api/admin/tables/:id - Retrieve single table details
+router.get('/tables/:id', tableController.getTable);
+
+// PATCH /api/admin/tables/:id - Update table (tableNumber, name, capacity, status)
+router.patch('/tables/:id', tableController.updateTable);
+
+// PATCH /api/admin/tables/:id/status - Update table active/inactive status
+router.patch('/tables/:id/status', tableController.updateTableStatus);
+
+// DELETE /api/admin/tables/:id - Delete a table record
+router.delete('/tables/:id', tableController.deleteTable);
 
 export default router;

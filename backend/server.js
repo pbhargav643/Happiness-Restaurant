@@ -3,6 +3,7 @@ import { PORT, NODE_ENV } from './src/config/env.js';
 import connectDB from './src/config/database.js';
 import { seedAdmin } from './src/utils/seedAdmin.js';
 import { seedMenu } from './src/utils/seedMenu.js';
+import { seedTables } from './src/utils/seedTables.js';
 import app from './app.js';
 
 // Connect to MongoDB
@@ -22,6 +23,13 @@ if (!conn) {
     await seedMenu();
   } catch (menuSeedErr) {
     console.warn('[Restaurant Server] Menu seed note:', menuSeedErr.message);
+  }
+
+  // Idempotent initial Table seed check (4 verified baseline dining tables)
+  try {
+    await seedTables();
+  } catch (tableSeedErr) {
+    console.warn('[Restaurant Server] Table seed note:', tableSeedErr.message);
   }
 }
 

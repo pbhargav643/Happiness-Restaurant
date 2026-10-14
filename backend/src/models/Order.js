@@ -116,7 +116,27 @@ const orderSchema = new mongoose.Schema(
     },
     pickup: {
       type: pickupSchema,
-      required: [true, 'Pickup details are required'],
+      required: function () {
+        return (this.orderType || 'PICKUP') === 'PICKUP';
+      },
+      default: null,
+    },
+    tableId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Table',
+      default: null,
+      index: true,
+    },
+    tableNumber: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    instructions: {
+      type: String,
+      trim: true,
+      default: '',
+      maxlength: [500, 'Instructions cannot exceed 500 characters'],
     },
     items: {
       type: [orderItemSchema],
@@ -134,13 +154,14 @@ const orderSchema = new mongoose.Schema(
     orderType: {
       type: String,
       required: true,
-      enum: ['PICKUP'],
+      enum: ['PICKUP', 'DINE_IN'],
       default: 'PICKUP',
+      index: true,
     },
     status: {
       type: String,
       required: true,
-      enum: ['PLACED', 'PREPARING', 'READY', 'PICKED_UP'],
+      enum: ['PLACED', 'PREPARING', 'READY', 'SERVED', 'PICKED_UP'],
       default: 'PLACED',
       index: true,
     },
