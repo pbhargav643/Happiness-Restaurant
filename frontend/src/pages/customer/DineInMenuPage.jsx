@@ -1,21 +1,26 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Container from '../../components/common/Container';
-import FoodImage from '../../components/common/FoodImage';
+import DineInMenuSidebar from '../../components/menu/DineInMenuSidebar';
+import DineInMenuCategorySection from '../../components/menu/DineInMenuCategorySection';
+import DineInMenuItemCard from '../../components/menu/DineInMenuItemCard';
+import MenuEmptyState from '../../components/menu/MenuEmptyState';
+import { MENU_CATEGORIES } from '../../data/menuData';
+import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig';
 import { useMenu } from '../../hooks/useMenu';
 import { useDineIn } from '../../context/DineInContext';
-import { MENU_CATEGORIES } from '../../data/menuData';
 import { findCanonicalCategory, isItemInCategory } from '../../services/menuApi';
 
 /**
- * DineInMenuPage Component (Phase 3 Prompt 1)
- *
- * Provides a dedicated dine-in menu browsing experience:
- * - Shows the active dine-in table number prominently throughout
- * - Reuses centralized menuData dishes, images, prices, and categories
- * - Full search, category tabs, and sorting
- * - Adds dishes directly to the isolated Dine-In cart
- * - Floating mobile/desktop table cart summary bar
+ * DineInMenuPage Component (Design 2)
+ * Visually matched 1:1 with Design 1 (MenuPage) while preserving Dine-In table session and ordering flow:
+ * - Persistent Dine-In Table spotlight banner at the top
+ * - Matching Hero header with ambient glows, eyebrow badge, headline, and value badges
+ * - Two-column responsive layout with sticky sidebar (DineInMenuSidebar)
+ * - Category sections with category headers, dish counters, and Category #X of 16 indicators
+ * - Standardized 3-column card grid (1 col mobile, 2 col tablet, 3 col desktop)
+ * - Exact product card dimensions, image aspect-[16/10], veg badges, typography, and price styling
+ * - Seamless table cart quantity controls and floating bottom order summary bar
  */
 export default function DineInMenuPage() {
   const navigate = useNavigate();
@@ -30,20 +35,20 @@ export default function DineInMenuPage() {
   } = useDineIn();
 
   // If no table is active in session, redirect to Dine-In Entry
-  React.useEffect(() => {
+  useEffect(() => {
     if (!dineInTable) {
       navigate('/dine-in', { replace: true });
     }
   }, [dineInTable, navigate]);
 
-  // Filter State
+  // Filter State (strictly local to DineInMenuPage)
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState('all');
   const [sortBy, setSortBy] = useState('default');
   const [addedItemToast, setAddedItemToast] = useState(null);
 
   // Auto-dismiss added toast feedback
-  React.useEffect(() => {
+  useEffect(() => {
     if (!addedItemToast) return;
     const timer = setTimeout(() => setAddedItemToast(null), 2500);
     return () => clearTimeout(timer);
@@ -59,7 +64,31 @@ export default function DineInMenuPage() {
     return map;
   }, [dineInCart]);
 
-  // Filter & Sort Pipeline
+  // Handle category tab/filter selection
+  const handleSelectCategory = (categoryId) => {
+    const match = findCanonicalCategory(categoryId);
+    const resolvedId = match ? match.id : categoryId;
+    setSelectedCategoryId(resolvedId);
+  };
+
+  // Handle clearing all filters and restoring the complete menu in default order
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategoryId('all');
+    setSortBy('default');
+  };
+
+  // Check if any non-default filter is currently active
+  const hasActiveFilters =
+    searchQuery.trim() !== '' || selectedCategoryId !== 'all' || sortBy !== 'default';
+
+  // Active category object
+  const activeCategory = useMemo(() => {
+    if (selectedCategoryId === 'all') return null;
+    return findCanonicalCategory(selectedCategoryId);
+  }, [selectedCategoryId]);
+
+  // Filter & Sort Pipeline (operates on active backend menu items)
   const filteredItems = useMemo(() => {
     let result = [...allMenuItems];
 
@@ -68,7 +97,7 @@ export default function DineInMenuPage() {
       result = result.filter((item) => isItemInCategory(item, selectedCategoryId));
     }
 
-    // 2. Search Filter
+    // 2. Search Filter: case-insensitive search across name, categoryName, and category
     const query = searchQuery.trim().toLowerCase();
     if (query) {
       result = result.filter((item) => {
@@ -80,17 +109,23 @@ export default function DineInMenuPage() {
       });
     }
 
-    // 3. Sorting
-    if (sortBy === 'price-low') {
-      result.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
-    } else if (sortBy === 'price-high') {
-      result.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+    // 3. Sorting (Matches Design 1 sort criteria exactly)
+    if (sortBy === 'price-asc') {
+      result.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (sortBy === 'price-desc') {
+      result.sort((a, b) => Number(b.price) - Number(a.price));
     } else if (sortBy === 'name-asc') {
       result.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    } else if (sortBy === 'name-desc') {
+      result.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
     }
 
     return result;
-  }, [allMenuItems, selectedCategoryId, searchQuery, sortBy]);
+  }, [allMenuItems, searchQuery, selectedCategoryId, sortBy]);
+
+  // Is this the default view (All categories, no search, default sort)?
+  const isDefaultFullView =
+    selectedCategoryId === 'all' && !searchQuery.trim() && sortBy === 'default';
 
   const handleAddToCart = (item) => {
     addToDineInCart(item, 1);
@@ -100,7 +135,7 @@ export default function DineInMenuPage() {
   if (!dineInTable) return null;
 
   return (
-    <div className="w-full bg-secondary min-h-screen pb-28">
+    <div className="w-full bg-secondary min-h-screen pb-32">
       {/* =====================================================================
           PERSISTENT DINE-IN TABLE HEADER BANNER
           Keeps table number and order type visible at all times
@@ -180,196 +215,254 @@ export default function DineInMenuPage() {
         </div>
       )}
 
-      {/* Main Menu Container */}
-      <Container className="pt-6 sm:pt-8">
-        {/* Search & Sort Bar */}
-        <div className="bg-white p-4 rounded-2xl border border-surface-border shadow-xs mb-6 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </span>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search dishes by name or ingredients..."
-              className="w-full pl-10 pr-9 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-accent focus:bg-white text-primary placeholder-slate-400 transition"
-              aria-label="Search dine-in menu dishes"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer"
-                aria-label="Clear search"
-              >
-                ✕
-              </button>
-            )}
-          </div>
+      {/* =====================================================================
+          1. DINE-IN HERO HEADER (Visually identical to Design 1's MenuHeader)
+          ===================================================================== */}
+      <div className="bg-secondary border-b border-surface-border py-8 sm:py-12 relative overflow-hidden">
+        {/* Ambient background accent glows */}
+        <div
+          className="absolute top-0 right-10 -z-10 w-72 h-72 bg-accent/5 rounded-full blur-3xl pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute bottom-0 left-10 -z-10 w-72 h-72 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"
+          aria-hidden="true"
+        />
 
-          {/* Sort Selector */}
-          <div className="flex items-center gap-2">
-            <label htmlFor="sort-dine-in" className="text-xs font-bold text-muted whitespace-nowrap hidden sm:block">
-              Sort by:
-            </label>
-            <select
-              id="sort-dine-in"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-accent font-semibold text-primary cursor-pointer w-full sm:w-auto"
-            >
-              <option value="default">Default Order</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="name-asc">Alphabetical (A-Z)</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Category Pills Navigation */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none mb-6">
-          <button
-            type="button"
-            onClick={() => setSelectedCategoryId('all')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer active:scale-95 ${
-              selectedCategoryId === 'all'
-                ? 'bg-primary text-accent shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-            }`}
-          >
-            All Categories ({allMenuItems.length})
-          </button>
-          {MENU_CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setSelectedCategoryId(cat.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer active:scale-95 ${
-                selectedCategoryId === cat.id
-                  ? 'bg-primary text-accent shadow-xs'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
-        </div>
-
-        {/* Dishes Grid */}
-        {filteredItems.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-surface-border p-12 text-center space-y-3 shadow-xs">
-            <div className="w-12 h-12 rounded-2xl bg-secondary mx-auto flex items-center justify-center text-muted">
-              🔍
+        <Container>
+          <div className="max-w-3xl mx-auto text-center space-y-4">
+            {/* Eyebrow Pill */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-surface-border shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              <span className="text-[11px] sm:text-xs font-bold tracking-wider text-muted uppercase">
+                {RESTAURANT_CONFIG.name} &bull; FULL FOOD CATALOG &bull; {dineInTable.tableNumber}
+              </span>
             </div>
-            <h2 className="text-base font-bold text-primary">No dishes found</h2>
-            <p className="text-xs text-muted max-w-sm mx-auto">
-              We couldn't find any dishes matching your filters. Try clearing your search query.
+
+            {/* Primary Menu Headline */}
+            <div className="space-y-1">
+              <span className="text-xs sm:text-sm font-bold text-accent tracking-widest uppercase block">
+                OUR DINE-IN MENU
+              </span>
+              <h1
+                id="menu-main-heading"
+                className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight leading-tight"
+              >
+                Freshly Prepared Dishes,{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-accent-hover to-amber-700">
+                  Served To Your Table.
+                </span>
+              </h1>
+            </div>
+
+            {/* Model Notice */}
+            <p className="text-xs sm:text-sm text-muted max-w-xl mx-auto leading-relaxed">
+              Explore authentic categories, add fresh dishes directly to your table cart, and enjoy meals prepared fresh for your dining session.
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCategoryId('all');
-                setSortBy('default');
-              }}
-              className="px-4 py-2 bg-primary text-accent text-xs font-bold rounded-xl hover:bg-primary-light transition cursor-pointer"
-            >
-              Reset Filters
-            </button>
+
+            {/* Value Badges */}
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[11px] sm:text-xs text-muted">
+              <span className="inline-flex items-center gap-1.5 bg-white px-3 py-1 rounded-lg border border-surface-border shadow-2xs font-semibold text-primary">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                16 Authentic Categories
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-white px-3 py-1 rounded-lg border border-surface-border shadow-2xs font-semibold text-primary">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                Exact Card Prices
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-white px-3 py-1 rounded-lg border border-surface-border shadow-2xs font-semibold text-primary">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                Pure Vegetarian Delicacies
+              </span>
+            </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filteredItems.map((item) => {
-              const itemKey = item.itemId || item.id;
-              const inCartQty = cartQuantities[itemKey] || 0;
+        </Container>
+      </div>
 
-              return (
-                <div
-                  key={itemKey}
-                  className="bg-white rounded-2xl border border-surface-border shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group"
-                >
-                  <div>
-                    {/* Food Image */}
-                    <div className="relative aspect-4/3 overflow-hidden bg-slate-100">
-                      <FoodImage
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      {/* Veg indicator badge */}
-                      <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/95 backdrop-blur-xs border border-emerald-300 text-emerald-800 flex items-center gap-1 shadow-xs">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span>{item.isVeg !== false ? 'Pure Veg' : 'Non-Veg'}</span>
-                      </span>
-                    </div>
+      {/* =====================================================================
+          2. MAIN CONTENT AREA WITH FIXED/STICKY SIDEBAR + CATEGORY SECTIONS
+          ===================================================================== */}
+      <main className="w-full" id="dinein-menu-content">
+        <Container className="py-6 sm:py-10">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start relative">
+            {/* Sticky / Fixed Sidebar matching Design 1 */}
+            <DineInMenuSidebar
+              categories={MENU_CATEGORIES}
+              totalAllItemsCount={allMenuItems.length}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onClearSearch={() => setSearchQuery('')}
+              selectedCategoryId={selectedCategoryId}
+              onSelectCategory={handleSelectCategory}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              resultCount={filteredItems.length}
+              hasActiveFilters={hasActiveFilters}
+              onClearFilters={handleClearFilters}
+            />
 
-                    {/* Content Details */}
-                    <div className="p-4 space-y-1.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-accent block">
-                        {item.categoryName || 'Chef Special'}
-                      </span>
-                      <h3 className="font-extrabold text-primary text-sm leading-snug line-clamp-1">
-                        {item.name}
-                      </h3>
-                      {item.description && (
-                        <p className="text-[11px] text-muted line-clamp-2 leading-relaxed">
-                          {item.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Price & Add to Cart Controls */}
-                  <div className="p-4 pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <span className="text-base font-black text-primary">
-                      &#8377;{Number(item.price) || 0}
-                    </span>
-
-                    {inCartQty > 0 ? (
-                      /* Quantity Stepper if already in Dine-In cart */
-                      <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                        <button
-                          type="button"
-                          onClick={() => updateDineInQuantity(item, inCartQty - 1)}
-                          className="w-6 h-6 rounded-lg bg-white hover:bg-slate-200 text-primary font-bold flex items-center justify-center text-xs transition cursor-pointer active:scale-95"
-                          aria-label={`Decrease ${item.name}`}
-                        >
-                          &minus;
-                        </button>
-                        <span className="px-2 text-xs font-black text-primary min-w-[20px] text-center">
-                          {inCartQty}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateDineInQuantity(item, inCartQty + 1)}
-                          className="w-6 h-6 rounded-lg bg-primary hover:bg-primary-light text-accent font-bold flex items-center justify-center text-xs transition cursor-pointer active:scale-95"
-                          aria-label={`Increase ${item.name}`}
-                        >
-                          &#43;
-                        </button>
-                      </div>
-                    ) : (
-                      /* Add to Cart Button */
-                      <button
-                        type="button"
-                        onClick={() => handleAddToCart(item)}
-                        className="py-1.5 px-3 rounded-xl bg-primary hover:bg-primary-light text-accent text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
-                        aria-label={`Add ${item.name} to ${dineInTable.tableNumber} cart`}
+            {/* Food Content Area */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+              {/* State 1: Active Initial Loading Skeleton */}
+              {loading && allMenuItems.length === 0 ? (
+                <div className="space-y-6" aria-label="Loading menu dishes">
+                  <div className="h-6 w-48 bg-secondary-dark/40 rounded-md animate-pulse mb-4" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white rounded-2xl border border-surface-border p-4 sm:p-5 flex flex-col justify-between h-full animate-pulse space-y-4"
                       >
-                        <span>&#43; Add</span>
-                      </button>
-                    )}
+                        <div>
+                          <div className="w-full aspect-[16/10] rounded-xl bg-secondary-dark/30" />
+                          <div className="mt-3.5 space-y-2">
+                            <div className="h-3 w-1/3 bg-secondary-dark/40 rounded" />
+                            <div className="h-4 w-3/4 bg-secondary-dark/50 rounded" />
+                            <div className="h-3 w-full bg-secondary-dark/30 rounded" />
+                          </div>
+                        </div>
+                        <div className="pt-3 border-t border-surface-border/80 flex items-center justify-between">
+                          <div className="h-5 w-16 bg-secondary-dark/40 rounded" />
+                          <div className="h-7 w-20 bg-secondary-dark/50 rounded-lg" />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              );
-            })}
+              ) : error && allMenuItems.length === 0 ? (
+                /* State 2: Error State when Backend is Offline and No Items Available */
+                <div
+                  role="alert"
+                  className="max-w-md mx-auto bg-white rounded-2xl border border-surface-border p-8 sm:p-10 text-center space-y-4 shadow-xs"
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-secondary-dark text-accent mx-auto flex items-center justify-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-8 h-8"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-primary tracking-tight">
+                    Menu Temporarily Unavailable
+                  </h2>
+                  <p className="text-sm text-muted">
+                    Menu is temporarily unavailable. Please try again.
+                  </p>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={refetch}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all duration-150 focus-visible:ring-2 focus-visible:ring-accent active:scale-95 cursor-pointer"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                </div>
+              ) : filteredItems.length === 0 ? (
+                /* State 3: Zero Items Match Active Filter/Search -> Empty State */
+                <MenuEmptyState
+                  onClearFilters={handleClearFilters}
+                  searchQuery={searchQuery}
+                  selectedCategoryName={activeCategory ? activeCategory.name : 'All'}
+                />
+              ) : isDefaultFullView ? (
+                /* State 4: Default Full Menu View -> All 16 categories in sequence */
+                <div className="space-y-6">
+                  {MENU_CATEGORIES.map((category) => {
+                    const categoryItems = allMenuItems.filter((item) =>
+                      isItemInCategory(item, category.id)
+                    );
+                    return (
+                      <DineInMenuCategorySection
+                        key={category.id}
+                        category={category}
+                        items={categoryItems}
+                        cartQuantities={cartQuantities}
+                        onAddToCart={handleAddToCart}
+                        onUpdateQuantity={updateDineInQuantity}
+                      />
+                    );
+                  })}
+                </div>
+              ) : activeCategory && !searchQuery.trim() && sortBy === 'default' ? (
+                /* State 5: Single Category Focused View (Default sort, no search) */
+                <DineInMenuCategorySection
+                  category={activeCategory}
+                  items={filteredItems}
+                  cartQuantities={cartQuantities}
+                  onAddToCart={handleAddToCart}
+                  onUpdateQuantity={updateDineInQuantity}
+                />
+              ) : (
+                /* State 6: Filtered / Searched / Sorted Active Grid View */
+                <section className="space-y-6" aria-label="Filtered menu results">
+                  {/* Filter Status Subtitle */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-surface-border">
+                    <div>
+                      <h2 className="text-xl sm:text-2xl font-extrabold text-primary tracking-tight">
+                        {activeCategory ? activeCategory.name : 'Dishes'}
+                        {searchQuery && (
+                          <span className="font-normal text-muted text-base sm:text-lg ml-2">
+                            matching "{searchQuery}"
+                          </span>
+                        )}
+                      </h2>
+                      <p className="text-xs text-muted mt-1">
+                        Showing {filteredItems.length} {filteredItems.length === 1 ? 'dish' : 'dishes'}
+                        {sortBy !== 'default' && (
+                          <span>
+                            {' '}&bull; Sorted by{' '}
+                            <strong className="text-primary font-semibold">
+                              {sortBy === 'price-asc' && 'Price: Low to High'}
+                              {sortBy === 'price-desc' && 'Price: High to Low'}
+                              {sortBy === 'name-asc' && 'Name: A to Z'}
+                              {sortBy === 'name-desc' && 'Name: Z to A'}
+                            </strong>
+                          </span>
+                        )}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleClearFilters}
+                      className="self-start sm:self-auto text-xs font-bold text-accent hover:text-amber-800 transition-colors cursor-pointer"
+                    >
+                      &larr; View Full Menu
+                    </button>
+                  </div>
+
+                  {/* Filtered Food Items Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                    {filteredItems.map((item) => {
+                      const itemKey = item.itemId || item.id;
+                      return (
+                        <DineInMenuItemCard
+                          key={itemKey}
+                          item={item}
+                          inCartQty={cartQuantities[itemKey] || 0}
+                          onAddToCart={handleAddToCart}
+                          onUpdateQuantity={updateDineInQuantity}
+                        />
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+            </div>
           </div>
-        )}
-      </Container>
+        </Container>
+      </main>
 
       {/* =====================================================================
           FLOATING STICKY BOTTOM ACTION BAR (Mobile & Desktop)

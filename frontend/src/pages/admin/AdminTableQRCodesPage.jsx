@@ -34,9 +34,9 @@ function TableQRCanvas({ text, size = 160, className = '' }) {
     try {
       setError(null);
       drawQRCodeToCanvas(canvasRef.current, text, {
-        pixelSize: Math.max(3, Math.floor(size / 37)),
+        pixelSize: Math.max(4, Math.floor(size / 37)),
         margin: 4,
-        darkColor: '#121214',
+        darkColor: '#000000',
         lightColor: '#FFFFFF',
       });
     } catch (err) {
@@ -204,7 +204,7 @@ export default function AdminTableQRCodesPage() {
       downloadQRCodePNG(payloadUrl, filename, {
         pixelSize: 12,
         margin: 4,
-        darkColor: '#121214',
+        darkColor: '#000000',
         lightColor: '#FFFFFF',
       });
 
