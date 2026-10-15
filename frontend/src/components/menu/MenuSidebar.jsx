@@ -169,9 +169,9 @@ export default function MenuSidebar({
             </span>
           </div>
 
-          {/* Categories List — Displays all 16 categories naturally together without internal scrollbar */}
+          {/* Categories List — Scrollable vertical list with custom scrollbar */}
           <div
-            className="space-y-1.5"
+            className="space-y-1.5 overflow-y-auto custom-scrollbar pr-1 max-h-[380px]"
             role="tablist"
             aria-label="Filter menu by category"
           >
