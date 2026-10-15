@@ -24,6 +24,7 @@ export default function DineInMenuSidebar({
   resultCount = 0,
   hasActiveFilters = false,
   onClearFilters,
+  hasBottomBar = false,
 }) {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const activeDesktopTabRef = useRef(null);
@@ -239,7 +240,7 @@ export default function DineInMenuSidebar({
               {/* Mobile Category List */}
               <div
                 ref={mobileListRef}
-                className="space-y-1.5 overflow-y-auto custom-scrollbar pr-1 max-h-[50vh]"
+                className="space-y-1.5 overflow-y-auto custom-scrollbar pr-1 pb-2 max-h-[50vh]"
                 role="tablist"
                 aria-label="Filter menu by category"
               >
@@ -319,13 +320,19 @@ export default function DineInMenuSidebar({
       {/* 3. DESKTOP FIXED/STICKY SIDEBAR (lg:block) - PERFECT ALIGNMENT */}
       {/* ============================================================== */}
       <aside
-        className="hidden lg:block w-72 xl:w-80 flex-shrink-0 sticky z-20 self-start"
+        className={`hidden lg:block w-72 xl:w-80 flex-shrink-0 sticky z-20 self-start ${
+          hasBottomBar ? 'max-h-[calc(100vh-228px)]' : 'max-h-[calc(100vh-156px)]'
+        }`}
         style={{ position: 'sticky', top: '136px', zIndex: 20 }}
         aria-label="Menu filters sidebar"
       >
         <div
           ref={sidebarCardRef}
-          className="bg-white rounded-3xl border border-surface-border p-5 shadow-xs flex flex-col h-[calc(100vh-155px)] max-h-[720px] min-h-[500px] overflow-hidden"
+          className={`bg-white rounded-3xl border border-surface-border p-5 shadow-xs flex flex-col ${
+            hasBottomBar
+              ? 'h-[calc(100vh-228px)] max-h-[calc(100vh-228px)]'
+              : 'h-[calc(100vh-156px)] max-h-[calc(100vh-156px)]'
+          } overflow-hidden`}
         >
           {/* Header */}
           <div className="flex-shrink-0 flex items-center justify-between pb-3.5 border-b border-surface-border/80">
@@ -470,7 +477,7 @@ export default function DineInMenuSidebar({
             {/* Dedicated scrollable list */}
             <div
               ref={desktopListRef}
-              className="flex-1 overflow-y-auto custom-scrollbar space-y-1.5 pr-1 min-h-0"
+              className="flex-1 overflow-y-auto custom-scrollbar space-y-1.5 pr-1 pb-2 min-h-0"
               role="tablist"
               aria-label="Filter menu by category"
             >

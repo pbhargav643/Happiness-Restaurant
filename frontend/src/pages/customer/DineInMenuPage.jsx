@@ -299,6 +299,7 @@ export default function DineInMenuPage() {
               resultCount={filteredItems.length}
               hasActiveFilters={hasActiveFilters}
               onClearFilters={handleClearFilters}
+              hasBottomBar={dineInTotalCount > 0}
             />
 
             {/* Food Content Area */}

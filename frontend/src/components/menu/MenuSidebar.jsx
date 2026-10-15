@@ -238,7 +238,7 @@ export default function MenuSidebar({
               {/* Mobile Category List */}
               <div
                 ref={mobileListRef}
-                className="space-y-1.5 overflow-y-auto custom-scrollbar pr-1 max-h-[50vh]"
+                className="space-y-1.5 overflow-y-auto custom-scrollbar pr-1 pb-2 max-h-[50vh]"
                 role="tablist"
                 aria-label="Filter menu by category"
               >
@@ -318,13 +318,13 @@ export default function MenuSidebar({
       {/* 3. DESKTOP FIXED/STICKY SIDEBAR (lg:block) - PERFECT ALIGNMENT */}
       {/* ============================================================== */}
       <aside
-        className="hidden lg:block w-72 xl:w-80 flex-shrink-0 sticky z-20 self-start"
+        className="hidden lg:block w-72 xl:w-80 flex-shrink-0 sticky z-20 self-start max-h-[calc(100vh-108px)]"
         style={{ position: 'sticky', top: '88px', zIndex: 30 }}
         aria-label="Menu filters sidebar"
       >
         <div
           ref={sidebarCardRef}
-          className="bg-white rounded-3xl border border-surface-border p-5 shadow-xs flex flex-col h-[calc(100vh-105px)] max-h-[720px] min-h-[500px] overflow-hidden"
+          className="bg-white rounded-3xl border border-surface-border p-5 shadow-xs flex flex-col h-[calc(100vh-108px)] max-h-[calc(100vh-108px)] overflow-hidden"
         >
           {/* Header (Strictly flex-shrink-0 so it never collapses or scrolls away) */}
           <div className="flex-shrink-0 flex items-center justify-between pb-3.5 border-b border-surface-border/80">
@@ -469,7 +469,7 @@ export default function MenuSidebar({
             {/* Dedicated scrollable list — ONLY this container scrolls */}
             <div
               ref={desktopListRef}
-              className="flex-1 overflow-y-auto custom-scrollbar space-y-1.5 pr-1 min-h-0"
+              className="flex-1 overflow-y-auto custom-scrollbar space-y-1.5 pr-1 pb-2 min-h-0"
               role="tablist"
               aria-label="Filter menu by category"
             >
