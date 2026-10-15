@@ -5,10 +5,9 @@ import React from 'react';
  * Unified, responsive Filters & Search sidebar:
  * - Direct real-time dish search with clear control
  * - Multi-option sorting (Default, Price Asc/Desc, Name A-Z/Z-A)
- * - Complete vertical category navigation list with all 16 categories
- * - Full visibility on desktop (sticky in sidebar column, viewport-bounded with smooth scrolling)
- *   and mobile (flows naturally in full document scrolling)
- * - No content clipped behind the bottom of the viewport
+ * - Complete vertical category navigation list displaying all 16 categories naturally
+ * - No internal scrollbar or height clipping; card expands vertically with its content
+ * - Uses normal document scrolling when page viewport cannot accommodate full card
  */
 export default function MenuSidebar({
   categories = [],
@@ -29,9 +28,9 @@ export default function MenuSidebar({
       className="w-full lg:w-72 xl:w-80 flex-shrink-0 lg:sticky lg:top-[88px] z-20 self-start"
       aria-label="Menu filters sidebar"
     >
-      <div className="bg-white rounded-3xl border border-surface-border p-5 shadow-xs flex flex-col lg:max-h-[calc(100vh-108px)]">
+      <div className="bg-white rounded-3xl border border-surface-border p-5 shadow-xs flex flex-col">
         {/* Header */}
-        <div className="flex-shrink-0 flex items-center justify-between pb-3.5 border-b border-surface-border/80">
+        <div className="flex items-center justify-between pb-3.5 border-b border-surface-border/80">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-accent/15 text-accent flex items-center justify-center font-bold">
               <svg
@@ -74,7 +73,7 @@ export default function MenuSidebar({
         </div>
 
         {/* 1. Search Dishes Input */}
-        <div className="flex-shrink-0 pt-3.5 space-y-1.5">
+        <div className="pt-3.5 space-y-1.5">
           <label
             htmlFor="menu-search-input"
             className="text-[10px] font-bold text-muted uppercase tracking-wider block"
@@ -122,7 +121,7 @@ export default function MenuSidebar({
         </div>
 
         {/* 2. Sort Selection */}
-        <div className="flex-shrink-0 pt-3 space-y-1.5">
+        <div className="pt-3 space-y-1.5">
           <label
             htmlFor="menu-sort-select"
             className="text-[10px] font-bold text-muted uppercase tracking-wider block"
@@ -159,9 +158,9 @@ export default function MenuSidebar({
           </div>
         </div>
 
-        {/* 3. Category Filter List Section */}
-        <div className="flex-1 min-h-0 flex flex-col pt-3 mt-3 border-t border-surface-border/60">
-          <div className="flex-shrink-0 flex items-center justify-between mb-2">
+        {/* 3. Category Filter List Section — Fully expanded, natural height */}
+        <div className="pt-3 mt-3 border-t border-surface-border/60">
+          <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-bold text-muted uppercase tracking-wider">
               Categories
             </span>
@@ -170,9 +169,9 @@ export default function MenuSidebar({
             </span>
           </div>
 
-          {/* Categories List — Scrollable on desktop inside max-h card, fully expanded on mobile */}
+          {/* Categories List — Displays all 16 categories naturally together without internal scrollbar */}
           <div
-            className="flex-1 min-h-0 space-y-1.5 lg:overflow-y-auto custom-scrollbar pr-1 pb-1"
+            className="space-y-1.5"
             role="tablist"
             aria-label="Filter menu by category"
           >
@@ -250,7 +249,7 @@ export default function MenuSidebar({
 
         {/* 4. Dedicated Bottom Action Bar */}
         {hasActiveFilters && (
-          <div className="flex-shrink-0 pt-3 mt-2 border-t border-surface-border/80">
+          <div className="pt-3 mt-3 border-t border-surface-border/80">
             <button
               type="button"
               onClick={onClearFilters}
