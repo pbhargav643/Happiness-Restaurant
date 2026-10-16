@@ -8,6 +8,7 @@ import {
 } from '../../services/orderService.js';
 import OrderStatusIndicator from '../../components/orders/OrderStatusIndicator.jsx';
 import FoodImage from '../../components/common/FoodImage.jsx';
+import ThermalPrintModal from '../../components/orders/ThermalPrintModal.jsx';
 
 /**
  * AdminOrderDetailPage Component
@@ -45,6 +46,68 @@ export default function AdminOrderDetailPage() {
     promptMessage: '',
     actionLabel: '',
   });
+
+  // Thermal print slip modal state
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+
+  // Payment confirmation modal state
+  const [paymentModal, setPaymentModal] = useState({
+    isOpen: false,
+    method: null, // 'CASH' | 'UPI'
+  });
+  const [recordingPayment, setRecordingPayment] = useState(false);
+
+  const handleOpenPaymentModal = (method) => {
+    if (!order || order.payment?.status === 'COMPLETED') return;
+    setPaymentModal({
+      isOpen: true,
+      method,
+    });
+  };
+
+  const handleClosePaymentModal = () => {
+    if (recordingPayment) return;
+    setPaymentModal({
+      isOpen: false,
+      method: null,
+    });
+  };
+
+  const handleConfirmPayment = async () => {
+    const { method } = paymentModal;
+    if (!order || !method || recordingPayment) return;
+
+    setRecordingPayment(true);
+    try {
+      const res = await adminOrderApi.recordOrderPayment(order.orderId, {
+        method,
+        amount: order.subtotal,
+      });
+
+      if (res && res.success && res.order) {
+        setOrder(res.order);
+        setFeedback({
+          message: `Payment of ₹${order.subtotal} via ${method} confirmed and recorded!`,
+          type: 'success',
+        });
+        handleClosePaymentModal();
+        setTimeout(() => setFeedback({ message: '', type: 'info' }), 4000);
+      } else {
+        setFeedback({
+          message: res?.error || 'Failed to record payment.',
+          type: 'error',
+        });
+      }
+    } catch (err) {
+      console.warn('Payment recording error:', err);
+      setFeedback({
+        message: err?.message || 'Unable to record payment.',
+        type: 'error',
+      });
+    } finally {
+      setRecordingPayment(false);
+    }
+  };
 
   // Fetch notification history and provider status safely
   const fetchNotifications = async () => {
@@ -449,7 +512,18 @@ export default function AdminOrderDetailPage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setPrintModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary hover:bg-primary-light text-white text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
+              title={`Print thermal receipt slip for Order #${order.orderId}`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-accent shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+              <span>Print Slip</span>
+            </button>
             <OrderStatusIndicator status={order.status || 'PLACED'} compact />
           </div>
         </div>
@@ -466,8 +540,90 @@ export default function AdminOrderDetailPage() {
 
       {/* TWO COLUMN GRID: Left Controls, Right Items & Customer */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* LEFT COLUMN (5 cols): Status Update Controls & Ready Time */}
+        {/* LEFT COLUMN (5 cols): Status Update Controls, Payment & Ready Time */}
         <div className="lg:col-span-5 space-y-6">
+          {/* Payment Settlement Card */}
+          <div className="bg-white rounded-3xl border border-surface-border p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-surface-border">
+              <h2 className="text-sm font-extrabold text-primary">
+                Payment Settlement
+              </h2>
+              {order.payment && order.payment.status === 'COMPLETED' ? (
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  Verified Paid
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                  Pending Payment
+                </span>
+              )}
+            </div>
+
+            {order.payment && order.payment.status === 'COMPLETED' ? (
+              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-emerald-900 font-bold">Method:</span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-900 font-extrabold">
+                    <span>{order.payment.method === 'CASH' ? '💵' : '📱'}</span>
+                    <span>{order.payment.method}</span>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-emerald-900 font-bold">Amount Paid:</span>
+                  <span className="text-base font-black text-emerald-950 font-sans">
+                    ₹{order.payment.amount}
+                  </span>
+                </div>
+                {order.payment.recordedAt && (
+                  <div className="flex items-center justify-between text-[11px] text-emerald-800 pt-1 border-t border-emerald-200/60">
+                    <span>Recorded:</span>
+                    <span className="font-mono">
+                      {new Date(order.payment.recordedAt).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                )}
+                {order.payment.recordedBy && (
+                  <div className="flex items-center justify-between text-[11px] text-emerald-800">
+                    <span>Recorded By:</span>
+                    <span className="font-semibold">{order.payment.recordedBy}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                  <span className="text-xs text-slate-500 font-medium">Order Total Due:</span>
+                  <span className="text-xl font-black text-slate-900 font-sans">
+                    ₹{order.subtotal}
+                  </span>
+                </div>
+
+                <p className="text-xs text-muted leading-relaxed">
+                  Record payment once customer money is received. Select the payment method used:
+                </p>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentModal('CASH')}
+                    className="py-3 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-xs cursor-pointer active:scale-95 flex items-center justify-center gap-1.5"
+                  >
+                    <span>💵</span>
+                    <span>Collect Cash</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenPaymentModal('UPI')}
+                    className="py-3 px-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition shadow-xs cursor-pointer active:scale-95 flex items-center justify-center gap-1.5"
+                  >
+                    <span>📱</span>
+                    <span>Collect UPI</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Status Control Card */}
           <div className="bg-white rounded-3xl border border-surface-border p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-surface-border">
@@ -1101,6 +1257,132 @@ export default function AdminOrderDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Payment Confirmation Modal */}
+      {paymentModal.isOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="detail-modal-payment-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !recordingPayment) {
+              handleClosePaymentModal();
+            }
+          }}
+        >
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 animate-scaleUp">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 ${
+                    paymentModal.method === 'CASH'
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                  }`}
+                >
+                  {paymentModal.method === 'CASH' ? '💵' : '📱'}
+                </div>
+                <div>
+                  <h3 id="detail-modal-payment-title" className="text-lg font-black text-slate-900 leading-snug">
+                    Confirm {paymentModal.method} Payment
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Manual payment verification & settlement
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={recordingPayment}
+                onClick={handleClosePaymentModal}
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs transition cursor-pointer disabled:opacity-50"
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Bill Summary Card */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">Order Reference:</span>
+                <span className="font-mono font-bold text-slate-900">
+                  #{order.orderId}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">Customer:</span>
+                <span className="font-bold text-slate-800">
+                  {order.customer?.name || 'Customer'}
+                </span>
+              </div>
+
+              <div className="pt-2 border-t border-slate-200 flex items-baseline justify-between">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  Amount Received:
+                </span>
+                <span className="text-2xl font-black text-slate-900 font-sans tracking-tight">
+                  ₹{order.subtotal}
+                </span>
+              </div>
+            </div>
+
+            {/* Verification Notice */}
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
+              <span className="text-sm">⚠️</span>
+              <p className="leading-relaxed">
+                Confirm only after <strong>₹{order.subtotal}</strong> has actually been received in Cash or verified in your UPI app.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2.5 pt-1">
+              <button
+                type="button"
+                disabled={recordingPayment}
+                onClick={handleClosePaymentModal}
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer disabled:opacity-50"
+              >
+                Cancel (Keep Unpaid)
+              </button>
+              <button
+                type="button"
+                disabled={recordingPayment}
+                onClick={handleConfirmPayment}
+                className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold transition shadow-xs cursor-pointer inline-flex items-center gap-2 active:scale-95 disabled:opacity-50 ${
+                  paymentModal.method === 'CASH'
+                    ? 'bg-emerald-600 hover:bg-emerald-700'
+                    : 'bg-indigo-600 hover:bg-indigo-700'
+                }`}
+              >
+                {recordingPayment ? (
+                  <>
+                    <svg className="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                    <span>Saving Payment...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Confirm {paymentModal.method} Payment</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Thermal POS Receipt Print Modal (80mm & 53mm) */}
+      <ThermalPrintModal
+        isOpen={printModalOpen}
+        order={order}
+        onClose={() => setPrintModalOpen(false)}
+      />
     </div>
   );
 }

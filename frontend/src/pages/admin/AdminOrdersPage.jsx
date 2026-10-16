@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import adminOrderApi from '../../services/adminOrderApi.js';
 import OrderStatusIndicator from '../../components/orders/OrderStatusIndicator.jsx';
+import ThermalPrintModal from '../../components/orders/ThermalPrintModal.jsx';
 
 /**
  * AdminOrdersPage Component
@@ -33,6 +34,93 @@ export default function AdminOrdersPage() {
   // Status transition loader & notification toast
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
   const [feedbackToast, setFeedbackToast] = useState(null);
+
+  // Payment confirmation modal state
+  const [paymentModal, setPaymentModal] = useState({
+    isOpen: false,
+    order: null,
+    method: null, // 'CASH' | 'UPI'
+  });
+  const [recordingPayment, setRecordingPayment] = useState(false);
+
+  // Thermal print slip modal state
+  const [printModal, setPrintModal] = useState({
+    isOpen: false,
+    order: null,
+  });
+
+  const handleOpenPrintModal = (order) => {
+    if (!order) return;
+    setPrintModal({
+      isOpen: true,
+      order,
+    });
+  };
+
+  const handleClosePrintModal = () => {
+    setPrintModal({
+      isOpen: false,
+      order: null,
+    });
+  };
+
+  const handleOpenPaymentModal = (order, method) => {
+    if (!order || order.payment?.status === 'COMPLETED') return;
+    setPaymentModal({
+      isOpen: true,
+      order,
+      method,
+    });
+  };
+
+  const handleClosePaymentModal = () => {
+    if (recordingPayment) return;
+    setPaymentModal({
+      isOpen: false,
+      order: null,
+      method: null,
+    });
+  };
+
+  const handleConfirmPayment = async () => {
+    const { order, method } = paymentModal;
+    if (!order || !method || recordingPayment) return;
+
+    setRecordingPayment(true);
+    try {
+      const res = await adminOrderApi.recordOrderPayment(order.orderId, {
+        method,
+        amount: order.subtotal,
+      });
+
+      if (res && res.success && res.order) {
+        setOrders((prev) =>
+          prev.map((o) => (o.orderId === order.orderId ? { ...o, payment: res.order.payment } : o))
+        );
+        setFeedbackToast({
+          message: `Payment of ₹${order.subtotal} via ${method} confirmed for Order #${order.orderId}!`,
+          type: 'success',
+        });
+        setTimeout(() => setFeedbackToast(null), 3500);
+        handleClosePaymentModal();
+      } else {
+        setFeedbackToast({
+          message: res?.error || 'Failed to record payment.',
+          type: 'error',
+        });
+        setTimeout(() => setFeedbackToast(null), 4000);
+      }
+    } catch (err) {
+      console.warn('Payment recording error:', err);
+      setFeedbackToast({
+        message: err?.message || 'Unable to record payment.',
+        type: 'error',
+      });
+      setTimeout(() => setFeedbackToast(null), 4000);
+    } finally {
+      setRecordingPayment(false);
+    }
+  };
 
   // Fetch orders from backend API
   const fetchOrders = async () => {
@@ -881,6 +969,66 @@ export default function AdminOrdersPage() {
                   </div>
                 </div>
 
+                {/* 3b. Payment Settlement Status & Action Controls */}
+                <div className="p-3 rounded-2xl bg-secondary/50 border border-surface-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-bold text-muted uppercase tracking-wider">
+                      Payment:
+                    </span>
+                    {order.payment && order.payment.status === 'COMPLETED' ? (
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold border shadow-2xs ${
+                          order.payment.method === 'CASH'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            : 'bg-indigo-50 text-indigo-800 border-indigo-200'
+                        }`}
+                        title={order.payment.recordedAt ? `Paid on ${new Date(order.payment.recordedAt).toLocaleString('en-IN')}` : 'Paid'}
+                      >
+                        <span
+                          className={`w-2 h-2 rounded-full ${
+                            order.payment.method === 'CASH' ? 'bg-emerald-500' : 'bg-indigo-500'
+                          }`}
+                        />
+                        <span>
+                          Paid via {order.payment.method} &bull; ₹{order.payment.amount}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        <span>Unpaid</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Manual Payment Recording Buttons (Only active if Unpaid) */}
+                  {(!order.payment || order.payment.status !== 'COMPLETED') && (
+                    <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                      <span className="text-[10px] text-muted font-semibold hidden md:inline">
+                        Collect:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenPaymentModal(order, 'CASH')}
+                        className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-2xs cursor-pointer active:scale-95 inline-flex items-center gap-1"
+                        title={`Collect Cash Payment of ₹${order.subtotal}`}
+                      >
+                        <span>💵</span>
+                        <span>Cash</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenPaymentModal(order, 'UPI')}
+                        className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-2xs cursor-pointer active:scale-95 inline-flex items-center gap-1"
+                        title={`Collect UPI Payment of ₹${order.subtotal}`}
+                      >
+                        <span>📱</span>
+                        <span>UPI</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {/* 4. Card Bottom: Total Amount & Action Buttons */}
                 <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-surface-border/60">
                   {/* Amount & Items Count */}
@@ -898,45 +1046,61 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
 
-                  {/* Actions: Quick Step Status Advancement + View Order */}
-                  <div className="flex items-center gap-2 self-stretch sm:self-auto flex-wrap">
-                    {action ? (
-                      <button
-                        type="button"
-                        onClick={() => handleQuickStatusTransition(order, action.nextStatus)}
-                        disabled={isUpdating}
-                        className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs transition shadow-xs active:scale-95 cursor-pointer disabled:opacity-50 ${action.colorClass}`}
-                        title={`Advance order status to ${action.nextStatus}`}
-                      >
-                        {isUpdating ? (
-                          <svg className="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                          </svg>
-                        ) : (
-                          action.icon
-                        )}
-                        <span>{isUpdating ? 'Updating...' : action.label}</span>
-                      </button>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold text-xs border border-slate-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        <span>Completed</span>
-                      </span>
+                  {/* Action Buttons: Conditional per Order Type */}
+                  <div className="flex items-center gap-2 flex-wrap self-stretch sm:self-auto">
+                    {/* 1. Quick Status Transition Action (Only for Parcel Pickup orders; hidden on Dine-in cards) */}
+                    {!isDineIn && (
+                      action ? (
+                        <button
+                          type="button"
+                          onClick={() => handleQuickStatusTransition(order, action.nextStatus)}
+                          disabled={isUpdating}
+                          className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold transition shadow-xs cursor-pointer active:scale-95 disabled:opacity-50 ${action.colorClass}`}
+                          title={`Advance order to ${action.nextStatus}`}
+                        >
+                          {isUpdating ? (
+                            <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                            </svg>
+                          ) : (
+                            action.icon
+                          )}
+                          <span>{action.label}</span>
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-semibold">
+                          Completed
+                        </span>
+                      )
                     )}
 
-                    <Link
-                      to={`/admin/orders/${order.orderId}`}
-                      className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white hover:bg-secondary border border-surface-border text-xs font-bold text-primary transition shadow-2xs hover:text-black"
-                      title="Open full receipt and kitchen ticket"
+                    {/* 2. Thermal Print Slip Action (Available for both Dine-in and Parcel Pickup orders) */}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenPrintModal(order)}
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-primary hover:bg-primary-light text-white font-bold text-xs transition shadow-xs active:scale-95 cursor-pointer"
+                      title={`Print thermal receipt slip for Order #${order.orderId}`}
                     >
-                      <span>View Order</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-accent shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                       </svg>
-                    </Link>
+                      <span>Print Slip</span>
+                    </button>
+
+                    {/* 3. View Order Navigation Action (Only for Parcel Pickup orders; hidden on Dine-in cards) */}
+                    {!isDineIn && (
+                      <Link
+                        to={`/admin/orders/${order.orderId}`}
+                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-surface-border text-primary hover:bg-secondary text-xs font-bold transition shadow-2xs"
+                        title={`View full details for Order #${order.orderId}`}
+                      >
+                        <span>View Order</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>
@@ -944,6 +1108,144 @@ export default function AdminOrdersPage() {
           })}
         </div>
       )}
+
+      {/* =====================================================================
+          6. CONFIRM PAYMENT RECORDING MODAL
+          ===================================================================== */}
+      {paymentModal.isOpen && paymentModal.order && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-payment-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !recordingPayment) {
+              handleClosePaymentModal();
+            }
+          }}
+        >
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 animate-scaleUp">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 ${
+                    paymentModal.method === 'CASH'
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                  }`}
+                >
+                  {paymentModal.method === 'CASH' ? '💵' : '📱'}
+                </div>
+                <div>
+                  <h3 id="modal-payment-title" className="text-lg font-black text-slate-900 leading-snug">
+                    Confirm {paymentModal.method} Payment
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Manual payment verification & settlement
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={recordingPayment}
+                onClick={handleClosePaymentModal}
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs transition cursor-pointer disabled:opacity-50"
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Bill Summary Card */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">Order Reference:</span>
+                <span className="font-mono font-bold text-slate-900">
+                  #{paymentModal.order.orderId}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">Order Type:</span>
+                <span className="font-bold text-slate-800">
+                  {(paymentModal.order.orderType || '').toUpperCase() === 'DINE_IN'
+                    ? `Dine-in (${paymentModal.order.tableNumber || 'Table'})`
+                    : 'Parcel Pickup'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">Customer:</span>
+                <span className="font-bold text-slate-800">
+                  {paymentModal.order.customer?.name || 'Customer'}
+                </span>
+              </div>
+
+              <div className="pt-2 border-t border-slate-200 flex items-baseline justify-between">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  Amount Received:
+                </span>
+                <span className="text-2xl font-black text-slate-900 font-sans tracking-tight">
+                  ₹{paymentModal.order.subtotal}
+                </span>
+              </div>
+            </div>
+
+            {/* Verification Notice */}
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
+              <span className="text-sm">⚠️</span>
+              <p className="leading-relaxed">
+                Confirm only after <strong>₹{paymentModal.order.subtotal}</strong> has actually been handed over in Cash or verified in your UPI app. This record will be permanently saved to the verified revenue reports.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2.5 pt-1">
+              <button
+                type="button"
+                disabled={recordingPayment}
+                onClick={handleClosePaymentModal}
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer disabled:opacity-50"
+              >
+                Cancel (Keep Unpaid)
+              </button>
+              <button
+                type="button"
+                disabled={recordingPayment}
+                onClick={handleConfirmPayment}
+                className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold transition shadow-xs cursor-pointer inline-flex items-center gap-2 active:scale-95 disabled:opacity-50 ${
+                  paymentModal.method === 'CASH'
+                    ? 'bg-emerald-600 hover:bg-emerald-700'
+                    : 'bg-indigo-600 hover:bg-indigo-700'
+                }`}
+              >
+                {recordingPayment ? (
+                  <>
+                    <svg className="animate-spin w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                    <span>Saving Payment...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Confirm {paymentModal.method} Payment</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          7. THERMAL RECEIPT PRINT SLIP MODAL & PORTAL (80mm & 53mm)
+          ===================================================================== */}
+      <ThermalPrintModal
+        isOpen={printModal.isOpen}
+        order={printModal.order}
+        onClose={handleClosePrintModal}
+      />
     </div>
   );
 }

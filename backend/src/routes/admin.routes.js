@@ -57,6 +57,23 @@ router.patch('/orders/:orderId/status', orderController.updateOrderStatus);
 // PATCH /api/admin/orders/:orderId/ready-time - Update estimated/actual ready time
 router.patch('/orders/:orderId/ready-time', orderController.updateReadyTime);
 
+// POST /api/admin/orders/:orderId/payment - Record manual Cash or UPI payment (PROTECTED)
+router.post('/orders/:orderId/payment', orderController.recordOrderPayment);
+router.patch('/orders/:orderId/payment', orderController.recordOrderPayment);
+
+// GET /api/admin/orders/payments/analytics - Verified payment revenue analytics (PROTECTED)
+router.get('/orders/payments/analytics', orderController.getPaymentAnalytics);
+
+// GET /api/admin/transactions/report - Cash & UPI transactions report (PROTECTED)
+router.get('/transactions/report', orderController.getTransactionReport);
+router.get('/orders/payments/report', orderController.getTransactionReport);
+
+// GET /api/admin/transactions/preview - Preview transaction count & total before deletion (PROTECTED)
+router.get('/transactions/preview', orderController.getTransactionsDeletePreview);
+
+// DELETE /api/admin/transactions - Delete transactions by period & payment method (PROTECTED)
+router.delete('/transactions', orderController.deleteTransactions);
+
 // DELETE /api/admin/orders/by-month - Permanently delete orders by Month + Year (PROTECTED)
 router.delete('/orders/by-month', orderController.deleteOrdersByMonth);
 

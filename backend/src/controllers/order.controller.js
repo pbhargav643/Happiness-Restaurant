@@ -337,6 +337,143 @@ export const orderController = {
       next(error);
     }
   },
+
+  /**
+   * POST /api/admin/orders/:orderId/payment
+   * Admin: Record manual Cash or UPI payment with verification (PROTECTED)
+   */
+  async recordOrderPayment(req, res, next) {
+    try {
+      const { orderId } = req.params;
+      const paymentData = req.body || {};
+      const adminUser = req.admin || null;
+
+      const updated = await orderService.recordOrderPayment(orderId, paymentData, adminUser);
+
+      return res.status(200).json({
+        success: true,
+        message: `Payment of ₹${updated.payment.amount} via ${updated.payment.method} recorded successfully for order #${updated.orderId}.`,
+        data: updated,
+      });
+    } catch (error) {
+      if (error.statusCode) {
+        return res.status(error.statusCode).json({
+          success: false,
+          message: error.message,
+        });
+      }
+      next(error);
+    }
+  },
+
+  /**
+   * GET /api/admin/orders/payments/analytics
+   * Admin: Get verified payment revenue breakdown and transactions (PROTECTED)
+   */
+  async getPaymentAnalytics(req, res, next) {
+    try {
+      const { dateFilter, startDate, endDate } = req.query;
+      const analytics = await orderService.getPaymentAnalytics({
+        dateFilter,
+        startDate,
+        endDate,
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: analytics,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * GET /api/admin/transactions/report
+   * Admin: Get comprehensive Cash & UPI transactions report (PROTECTED)
+   */
+  async getTransactionReport(req, res, next) {
+    try {
+      const {
+        month,
+        year,
+        startDate,
+        endDate,
+        quickFilter,
+        method,
+        orderType,
+        paymentStatus,
+        search,
+      } = req.query;
+
+      const report = await orderService.getTransactionReport({
+        month,
+        year,
+        startDate,
+        endDate,
+        quickFilter,
+        method,
+        orderType,
+        paymentStatus,
+        search,
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * GET /api/admin/transactions/preview
+   * Admin: Preview count and amount of transactions before deletion (PROTECTED)
+   */
+  async getTransactionsDeletePreview(req, res, next) {
+    try {
+      const { year, month, day, method } = req.query;
+
+      const preview = await orderService.getTransactionsDeletePreview({
+        year,
+        month,
+        day,
+        method,
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: preview,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * DELETE /api/admin/transactions
+   * Admin: Delete transactions for specific period and method (PROTECTED)
+   */
+  async deleteTransactions(req, res, next) {
+    try {
+      const year = req.body?.year || req.query?.year;
+      const month = req.body?.month || req.query?.month;
+      const day = req.body?.day || req.query?.day;
+      const method = req.body?.method || req.query?.method;
+
+      const result = await orderService.deleteTransactions({
+        year,
+        month,
+        day,
+        method,
+      });
+
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 export default orderController;

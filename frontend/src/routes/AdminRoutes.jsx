@@ -18,6 +18,7 @@ const AdminAlertsPage = lazy(() => import('../pages/admin/AdminAlertsPage'));
 const AdminReviewsPage = lazy(() => import('../pages/admin/AdminReviewsPage'));
 const AdminTablesPage = lazy(() => import('../pages/admin/AdminTablesPage'));
 const AdminTableQRCodesPage = lazy(() => import('../pages/admin/AdminTableQRCodesPage'));
+const AdminTransactionsPage = lazy(() => import('../pages/admin/AdminTransactionsPage'));
 
 function AdminSuspenseFallback() {
   return (
@@ -143,6 +144,14 @@ export default function AdminRoutes() {
         element={
           <Suspense fallback={<AdminSuspenseFallback />}>
             <AdminReviewsPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="transactions"
+        element={
+          <Suspense fallback={<AdminSuspenseFallback />}>
+            <AdminTransactionsPage />
           </Suspense>
         }
       />

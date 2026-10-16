@@ -830,6 +830,585 @@ export const orderService = {
       message: `Successfully deleted ${deleteResult.deletedCount} order(s) created during ${monthName} ${parsedYear}.`,
     };
   },
+
+  /**
+   * Record manual Cash or UPI payment for an order (Admin Only)
+   *
+   * Rules:
+   * 1. Order must exist in database.
+   * 2. Idempotent / Duplicate prevention: If already paid, reject to prevent duplicate recording.
+   * 3. Payment method must be strictly 'CASH' or 'UPI'.
+   * 4. Amount must be a non-negative number; defaults to order.subtotal.
+   * 5. Persist record with timestamp, method, amount, status 'COMPLETED', and recording admin.
+   */
+  async recordOrderPayment(orderId, paymentData = {}, adminUser = null) {
+    if (!orderId || typeof orderId !== 'string') {
+      const err = new Error('Order ID is required');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      const err = new Error('Database connection is not available');
+      err.statusCode = 503;
+      throw err;
+    }
+
+    const cleanId = orderId.trim().toUpperCase();
+    const order = await Order.findOne({ orderId: cleanId });
+    if (!order) {
+      const err = new Error(`Order "${cleanId}" not found`);
+      err.statusCode = 404;
+      throw err;
+    }
+
+    // Duplicate payment prevention
+    if (order.payment && order.payment.status === 'COMPLETED') {
+      const recordedTime = order.payment.recordedAt
+        ? new Date(order.payment.recordedAt).toLocaleString('en-IN')
+        : 'previously';
+      const err = new Error(
+        `Payment for order "${cleanId}" has already been confirmed and recorded via ${order.payment.method} on ${recordedTime}. Duplicate payment recording is blocked.`
+      );
+      err.statusCode = 409;
+      throw err;
+    }
+
+    const rawMethod = paymentData.method ? String(paymentData.method).trim().toUpperCase() : '';
+    if (rawMethod !== 'CASH' && rawMethod !== 'UPI') {
+      const err = new Error('Payment method must be strictly "CASH" or "UPI"');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    let paymentAmount = order.subtotal;
+    if (paymentData.amount !== undefined && paymentData.amount !== null) {
+      const parsedAmount = Number(paymentData.amount);
+      if (isNaN(parsedAmount) || parsedAmount < 0) {
+        const err = new Error('Payment amount must be a non-negative number');
+        err.statusCode = 400;
+        throw err;
+      }
+      paymentAmount = parsedAmount;
+    }
+
+    order.payment = {
+      method: rawMethod,
+      amount: paymentAmount,
+      status: 'COMPLETED',
+      recordedAt: new Date(),
+      recordedBy: adminUser?.name || adminUser?.email || 'Admin',
+      transactionNote: paymentData.note ? String(paymentData.note).trim() : null,
+    };
+
+    const savedOrder = await order.save();
+    return savedOrder;
+  },
+
+  /**
+   * Get verified payment revenue analytics with date filtering (Admin Only)
+   * Calculates Total, Cash, and UPI revenue for Dine-in and Parcel Pickup.
+   * Cash Revenue + UPI Revenue = Total Paid Revenue (Guaranteed reconciliation).
+   */
+  async getPaymentAnalytics(options = {}) {
+    if (mongoose.connection.readyState !== 1) {
+      return {
+        totalCashRevenue: 0,
+        totalUpiRevenue: 0,
+        totalPaidRevenue: 0,
+        dineInCashRevenue: 0,
+        dineInUpiRevenue: 0,
+        dineInPaidRevenue: 0,
+        pickupCashRevenue: 0,
+        pickupUpiRevenue: 0,
+        pickupPaidRevenue: 0,
+        transactions: [],
+      };
+    }
+
+    const { dateFilter, startDate, endDate } = options;
+    const query = { 'payment.status': 'COMPLETED' };
+
+    if (dateFilter === 'TODAY') {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      query['payment.recordedAt'] = { $gte: startOfToday };
+    } else if (dateFilter === 'WEEK') {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      query['payment.recordedAt'] = { $gte: weekAgo };
+    } else if (dateFilter === 'MONTH') {
+      const monthAgo = new Date();
+      monthAgo.setDate(monthAgo.getDate() - 30);
+      query['payment.recordedAt'] = { $gte: monthAgo };
+    } else if (startDate && endDate) {
+      query['payment.recordedAt'] = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    const paidOrders = await Order.find(query)
+      .select('orderId orderType subtotal payment customer tableNumber createdAt')
+      .sort({ 'payment.recordedAt': -1 })
+      .lean();
+
+    let totalCashRevenue = 0;
+    let totalUpiRevenue = 0;
+    let dineInCashRevenue = 0;
+    let dineInUpiRevenue = 0;
+    let pickupCashRevenue = 0;
+    let pickupUpiRevenue = 0;
+
+    const transactions = paidOrders.map((o) => {
+      const amt = Number(o.payment?.amount || o.subtotal || 0);
+      const isDineIn = (o.orderType || '').toUpperCase() === 'DINE_IN';
+      const isCash = o.payment?.method === 'CASH';
+
+      if (isCash) {
+        totalCashRevenue += amt;
+        if (isDineIn) dineInCashRevenue += amt;
+        else pickupCashRevenue += amt;
+      } else {
+        totalUpiRevenue += amt;
+        if (isDineIn) dineInUpiRevenue += amt;
+        else pickupUpiRevenue += amt;
+      }
+
+      return {
+        orderId: o.orderId,
+        orderType: isDineIn ? 'DINE_IN' : 'PICKUP',
+        tableNumber: o.tableNumber || null,
+        customerName: o.customer?.name || (isDineIn ? 'Dine-In Guest' : 'Takeaway Customer'),
+        method: o.payment?.method,
+        amount: amt,
+        status: o.payment?.status || 'COMPLETED',
+        timestamp: o.payment?.recordedAt || o.createdAt,
+        recordedBy: o.payment?.recordedBy || 'Admin',
+      };
+    });
+
+    const dineInPaidRevenue = dineInCashRevenue + dineInUpiRevenue;
+    const pickupPaidRevenue = pickupCashRevenue + pickupUpiRevenue;
+    const totalPaidRevenue = totalCashRevenue + totalUpiRevenue;
+
+    return {
+      totalCashRevenue,
+      totalUpiRevenue,
+      totalPaidRevenue,
+      dineInCashRevenue,
+      dineInUpiRevenue,
+      dineInPaidRevenue,
+      pickupCashRevenue,
+      pickupUpiRevenue,
+      pickupPaidRevenue,
+      transactions,
+    };
+  },
+
+  /**
+   * Cash & UPI Transactions Report Service (Admin Only)
+   * Calculates trusted summary metrics and returns matching transactions.
+   */
+  async getTransactionReport(options = {}) {
+    if (mongoose.connection.readyState !== 1) {
+      return {
+        summary: {
+          totalCashCollected: 0,
+          totalUpiCollected: 0,
+          totalConfirmed: 0,
+          dineInCollection: 0,
+          pickupCollection: 0,
+          pendingAmount: 0,
+          failedAmount: 0,
+          totalTransactions: 0,
+          paidCount: 0,
+          pendingCount: 0,
+          cashCount: 0,
+          upiCount: 0,
+        },
+        transactions: [],
+      };
+    }
+
+    const {
+      month,
+      year,
+      startDate,
+      endDate,
+      quickFilter,
+      method,
+      orderType,
+      paymentStatus,
+      search,
+    } = options;
+
+    const query = {};
+
+    // 1. Order Type Filter
+    if (orderType && orderType !== 'ALL') {
+      const cleanType = String(orderType).trim().toUpperCase();
+      if (cleanType === 'DINE_IN' || cleanType === 'PICKUP') {
+        query.orderType = cleanType;
+      }
+    }
+
+    // 2. Payment Method Filter
+    if (method && method !== 'ALL') {
+      const cleanMethod = String(method).trim().toUpperCase();
+      if (cleanMethod === 'CASH' || cleanMethod === 'UPI') {
+        query['payment.method'] = cleanMethod;
+      }
+    }
+
+    // 3. Payment Status Filter
+    if (paymentStatus && paymentStatus !== 'ALL') {
+      const cleanStatus = String(paymentStatus).trim().toUpperCase();
+      if (cleanStatus === 'PAID' || cleanStatus === 'COMPLETED') {
+        query['payment.status'] = 'COMPLETED';
+      } else if (cleanStatus === 'PENDING') {
+        const pendingCondition = { $or: [{ payment: null }, { 'payment.status': 'PENDING' }] };
+        query.$and = (query.$and || []).concat([pendingCondition]);
+      } else if (cleanStatus === 'FAILED' || cleanStatus === 'REFUNDED') {
+        query['payment.status'] = 'FAILED';
+      }
+    }
+
+    // 4. Date Filter Construction
+    let startBoundary = null;
+    let endBoundary = null;
+
+    if (quickFilter === 'TODAY') {
+      const now = new Date();
+      startBoundary = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      endBoundary = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    } else if (quickFilter === 'THIS_MONTH') {
+      const now = new Date();
+      startBoundary = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      endBoundary = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    } else if (quickFilter === 'LAST_MONTH') {
+      const now = new Date();
+      startBoundary = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
+      endBoundary = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+    } else if (month && year) {
+      const mNum = parseInt(month, 10);
+      const yNum = parseInt(year, 10);
+      if (!isNaN(mNum) && !isNaN(yNum) && mNum >= 1 && mNum <= 12) {
+        startBoundary = new Date(yNum, mNum - 1, 1, 0, 0, 0, 0);
+        endBoundary = new Date(yNum, mNum, 0, 23, 59, 59, 999);
+      }
+    } else if (startDate && endDate) {
+      const s = new Date(startDate);
+      const e = new Date(endDate);
+      if (!isNaN(s.getTime()) && !isNaN(e.getTime())) {
+        s.setHours(0, 0, 0, 0);
+        e.setHours(23, 59, 59, 999);
+        startBoundary = s;
+        endBoundary = e;
+      }
+    } else if (startDate) {
+      const s = new Date(startDate);
+      if (!isNaN(s.getTime())) {
+        s.setHours(0, 0, 0, 0);
+        startBoundary = s;
+      }
+    } else if (endDate) {
+      const e = new Date(endDate);
+      if (!isNaN(e.getTime())) {
+        e.setHours(23, 59, 59, 999);
+        endBoundary = e;
+      }
+    }
+
+    if (startBoundary && endBoundary) {
+      query.$and = (query.$and || []).concat([
+        {
+          $or: [
+            { 'payment.recordedAt': { $gte: startBoundary, $lte: endBoundary } },
+            {
+              $and: [
+                { 'payment.recordedAt': { $exists: false } },
+                { createdAt: { $gte: startBoundary, $lte: endBoundary } },
+              ],
+            },
+            {
+              $and: [
+                { payment: null },
+                { createdAt: { $gte: startBoundary, $lte: endBoundary } },
+              ],
+            },
+          ],
+        },
+      ]);
+    } else if (startBoundary) {
+      query.$and = (query.$and || []).concat([
+        {
+          $or: [
+            { 'payment.recordedAt': { $gte: startBoundary } },
+            {
+              $and: [
+                { 'payment.recordedAt': { $exists: false } },
+                { createdAt: { $gte: startBoundary } },
+              ],
+            },
+            {
+              $and: [
+                { payment: null },
+                { createdAt: { $gte: startBoundary } },
+              ],
+            },
+          ],
+        },
+      ]);
+    } else if (endBoundary) {
+      query.$and = (query.$and || []).concat([
+        {
+          $or: [
+            { 'payment.recordedAt': { $lte: endBoundary } },
+            {
+              $and: [
+                { 'payment.recordedAt': { $exists: false } },
+                { createdAt: { $lte: endBoundary } },
+              ],
+            },
+            {
+              $and: [
+                { payment: null },
+                { createdAt: { $lte: endBoundary } },
+              ],
+            },
+          ],
+        },
+      ]);
+    }
+
+    // 5. Search
+    if (search && typeof search === 'string' && search.trim()) {
+      const escaped = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const searchRegex = new RegExp(escaped, 'i');
+      const searchCondition = {
+        $or: [
+          { orderId: searchRegex },
+          { 'customer.name': searchRegex },
+          { 'customer.mobile': searchRegex },
+          { 'payment.transactionNote': searchRegex },
+        ],
+      };
+      query.$and = (query.$and || []).concat([searchCondition]);
+    }
+
+    const orders = await Order.find(query)
+      .select('orderId orderType subtotal payment customer tableNumber instructions createdAt status')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    let totalCashCollected = 0;
+    let totalUpiCollected = 0;
+    let dineInCollection = 0;
+    let pickupCollection = 0;
+    let pendingAmount = 0;
+    let failedAmount = 0;
+    let paidCount = 0;
+    let pendingCount = 0;
+    let cashCount = 0;
+    let upiCount = 0;
+
+    const transactions = orders.map((o) => {
+      const isDineIn = (o.orderType || '').toUpperCase() === 'DINE_IN';
+      const isPaid = o.payment && o.payment.status === 'COMPLETED';
+      const isFailed = o.payment && o.payment.status === 'FAILED';
+      const isPending = !isPaid && !isFailed;
+
+      const amt = Number(isPaid ? (o.payment?.amount || o.subtotal || 0) : (o.subtotal || 0));
+
+      if (isPaid) {
+        paidCount++;
+        const isCash = o.payment?.method === 'CASH';
+        if (isCash) {
+          totalCashCollected += amt;
+          cashCount++;
+        } else {
+          totalUpiCollected += amt;
+          upiCount++;
+        }
+
+        if (isDineIn) {
+          dineInCollection += amt;
+        } else {
+          pickupCollection += amt;
+        }
+      } else if (isPending) {
+        pendingAmount += amt;
+        pendingCount++;
+      } else if (isFailed) {
+        failedAmount += amt;
+      }
+
+      return {
+        orderId: o.orderId,
+        orderType: isDineIn ? 'DINE_IN' : 'PICKUP',
+        tableNumber: o.tableNumber || null,
+        orderStatus: o.status || 'PLACED',
+        customerName: o.customer?.name || (isDineIn ? 'Dine-In Guest' : 'Takeaway Customer'),
+        customerMobile: o.customer?.mobile || '',
+        customerEmail: o.customer?.email || '',
+        method: isPaid ? o.payment.method : (o.payment?.method || 'PENDING'),
+        status: isPaid ? 'PAID' : (isFailed ? 'FAILED' : 'PENDING'),
+        amount: amt,
+        timestamp: isPaid && o.payment.recordedAt ? o.payment.recordedAt : o.createdAt,
+        recordedBy: o.payment?.recordedBy || '—',
+        transactionNote: o.payment?.transactionNote || null,
+        instructions: o.instructions || '',
+        createdAt: o.createdAt,
+      };
+    });
+
+    const totalConfirmed = totalCashCollected + totalUpiCollected;
+
+    return {
+      summary: {
+        totalCashCollected,
+        totalUpiCollected,
+        totalConfirmed,
+        dineInCollection,
+        pickupCollection,
+        pendingAmount,
+        failedAmount,
+        totalTransactions: transactions.length,
+        paidCount,
+        pendingCount,
+        cashCount,
+        upiCount,
+      },
+      transactions,
+    };
+  },
+
+  /**
+   * Helper to construct query for transactions deletion / preview
+   */
+  _buildTransactionDeleteQuery(options = {}) {
+    const { year, month, day, method } = options;
+
+    const parsedYear = parseInt(year, 10);
+    if (isNaN(parsedYear) || parsedYear < 2000 || parsedYear > 2100) {
+      const err = new Error('Valid 4-digit year is required');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const parsedMonth = parseInt(month, 10);
+    if (isNaN(parsedMonth) || parsedMonth < 1 || parsedMonth > 12) {
+      const err = new Error('Valid month (1-12) is required');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    let startBoundary;
+    let endBoundary;
+
+    if (day && day !== 'ALL') {
+      const parsedDay = parseInt(day, 10);
+      if (isNaN(parsedDay) || parsedDay < 1 || parsedDay > 31) {
+        const err = new Error('Valid day (1-31) is required');
+        err.statusCode = 400;
+        throw err;
+      }
+      startBoundary = new Date(parsedYear, parsedMonth - 1, parsedDay, 0, 0, 0, 0);
+      endBoundary = new Date(parsedYear, parsedMonth - 1, parsedDay, 23, 59, 59, 999);
+    } else {
+      startBoundary = new Date(parsedYear, parsedMonth - 1, 1, 0, 0, 0, 0);
+      endBoundary = new Date(parsedYear, parsedMonth, 0, 23, 59, 59, 999);
+    }
+
+    const query = {
+      'payment.status': 'COMPLETED',
+    };
+
+    if (method && method !== 'ALL') {
+      const cleanMethod = String(method).trim().toUpperCase();
+      if (cleanMethod === 'CASH' || cleanMethod === 'UPI') {
+        query['payment.method'] = cleanMethod;
+      }
+    } else {
+      query['payment.method'] = { $in: ['CASH', 'UPI'] };
+    }
+
+    query.$and = [
+      {
+        $or: [
+          { 'payment.recordedAt': { $gte: startBoundary, $lte: endBoundary } },
+          {
+            $and: [
+              { 'payment.recordedAt': { $exists: false } },
+              { createdAt: { $gte: startBoundary, $lte: endBoundary } },
+            ],
+          },
+        ],
+      },
+    ];
+
+    return { query, startBoundary, endBoundary, parsedYear, parsedMonth };
+  },
+
+  /**
+   * Preview matching transactions count and amount before deletion (Admin Only)
+   */
+  async getTransactionsDeletePreview(options = {}) {
+    if (mongoose.connection.readyState !== 1) {
+      return { success: true, count: 0, totalAmount: 0 };
+    }
+
+    const { query } = this._buildTransactionDeleteQuery(options);
+    const matchingOrders = await Order.find(query).select('orderId payment subtotal').lean();
+    const count = matchingOrders.length;
+    const totalAmount = matchingOrders.reduce(
+      (sum, o) => sum + Number(o.payment?.amount || o.subtotal || 0),
+      0
+    );
+
+    return {
+      success: true,
+      count,
+      totalAmount,
+    };
+  },
+
+  /**
+   * Delete transactions matching year, month, optional day, and payment method (Admin Only)
+   * Safely unsets the payment record without deleting customer orders or menu/table records.
+   */
+  async deleteTransactions(options = {}) {
+    if (mongoose.connection.readyState !== 1) {
+      return {
+        success: true,
+        deletedCount: 0,
+        deletedAmount: 0,
+        message: 'Database connection offline; zero transactions deleted.',
+      };
+    }
+
+    const { query } = this._buildTransactionDeleteQuery(options);
+    const matchingOrders = await Order.find(query).select('orderId payment subtotal').lean();
+    const deletedCount = matchingOrders.length;
+    const deletedAmount = matchingOrders.reduce(
+      (sum, o) => sum + Number(o.payment?.amount || o.subtotal || 0),
+      0
+    );
+
+    if (deletedCount > 0) {
+      await Order.updateMany(query, { $unset: { payment: 1 } });
+    }
+
+    const methodLabel = options.method === 'CASH' ? 'Cash' : options.method === 'UPI' ? 'UPI' : 'Cash & UPI';
+
+    return {
+      success: true,
+      deletedCount,
+      deletedAmount,
+      message: `Successfully deleted ${deletedCount} ${methodLabel} transaction(s) totaling ₹${deletedAmount}.`,
+    };
+  },
 };
 
 export default orderService;

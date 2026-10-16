@@ -80,6 +80,48 @@ const pickupSchema = new mongoose.Schema(
 );
 
 /**
+ * Payment Details Sub-Schema (Manual Cash & UPI Settlement)
+ */
+const paymentSchema = new mongoose.Schema(
+  {
+    method: {
+      type: String,
+      enum: ['CASH', 'UPI'],
+      required: [true, 'Payment method must be CASH or UPI'],
+      uppercase: true,
+      trim: true,
+    },
+    amount: {
+      type: Number,
+      required: [true, 'Payment amount is required'],
+      min: [0, 'Payment amount must be non-negative'],
+    },
+    status: {
+      type: String,
+      enum: ['PENDING', 'COMPLETED', 'FAILED'],
+      default: 'COMPLETED',
+      uppercase: true,
+      trim: true,
+    },
+    recordedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    recordedBy: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    transactionNote: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+  },
+  { _id: false }
+);
+
+/**
  * Order Mongoose Schema
  *
  * Rules:
@@ -169,11 +211,19 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    payment: {
+      type: paymentSchema,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+orderSchema.index({ 'payment.status': 1 });
+orderSchema.index({ 'payment.method': 1 });
+orderSchema.index({ 'payment.recordedAt': 1 });
 
 const Order = mongoose.models.Order || mongoose.model('Order', orderSchema);
 

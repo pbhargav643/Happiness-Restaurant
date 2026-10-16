@@ -23,6 +23,27 @@ export function getOrderClassification(order) {
 }
 
 /**
+ * Format a payment ISO date timestamp for readability in the audit log
+ */
+function formatPaymentTimestamp(isoString) {
+  if (!isoString) return '—';
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return String(isoString);
+    return d.toLocaleString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  } catch {
+    return String(isoString);
+  }
+}
+
+/**
  * AdminAnalyticsPage Component
  * Segregated Operational Analytics & Sales Reports (/admin/analytics)
  *
@@ -44,6 +65,9 @@ export default function AdminAnalyticsPage() {
 
   // Time Window Filter: 'ALL' | 'TODAY' | 'WEEK' | 'MONTH'
   const [dateFilter, setDateFilter] = useState('ALL');
+
+  // Payment Transaction Log Filter: 'ALL' | 'DINE_IN' | 'PICKUP'
+  const [transactionTab, setTransactionTab] = useState('ALL');
 
   const fetchAnalyticsOrders = async () => {
     setLoading(true);
@@ -360,27 +384,126 @@ export default function AdminAnalyticsPage() {
     return Object.values(map).sort((a, b) => b.sales - a.sales || b.orders - a.orders);
   }, [selectedSection, filteredDineInOrders]);
 
-  // 9. Payment Method Breakdown (Where data is present)
-  const paymentBreakdown = useMemo(() => {
-    if (activeOrders.length === 0) return [];
+  // 9. Verified Payment Revenue & Settlement Calculations (Server-Validated COMPLETED Payments)
+  const paymentAnalytics = useMemo(() => {
+    const isPaid = (o) => Boolean(o && o.payment && o.payment.status === 'COMPLETED');
 
-    const map = {};
-    activeOrders.forEach((o) => {
-      const method =
-        o.paymentMethod ||
-        o.payment?.method ||
-        o.payment?.type ||
-        (selectedSection === 'DINE_IN' ? 'Table Settlement (Cash / UPI)' : 'Counter Settlement');
+    let dineInCashRevenue = 0;
+    let dineInUpiRevenue = 0;
+    let dineInCashCount = 0;
+    let dineInUpiCount = 0;
+    const dineInTransactions = [];
 
-      if (!map[method]) {
-        map[method] = { method, count: 0, amount: 0 };
+    filteredDineInOrders.forEach((o) => {
+      if (isPaid(o)) {
+        const amt = Number(o.payment.amount) || Number(o.subtotal) || 0;
+        const method = String(o.payment.method || '').toUpperCase();
+        if (method === 'CASH') {
+          dineInCashRevenue += amt;
+          dineInCashCount += 1;
+        } else if (method === 'UPI') {
+          dineInUpiRevenue += amt;
+          dineInUpiCount += 1;
+        }
+        dineInTransactions.push({
+          orderId: o.orderId || o._id,
+          orderType: 'DINE_IN',
+          tableNumber: o.tableNumber || null,
+          tableId: o.tableId || null,
+          method: method || 'CASH',
+          amount: amt,
+          status: o.payment.status || 'COMPLETED',
+          timestamp: o.payment.recordedAt || o.createdAt,
+          customerName: o.customer?.name || null,
+          recordedBy: o.payment.recordedBy || null,
+        });
       }
-      map[method].count += 1;
-      map[method].amount += Number(o.subtotal || 0);
     });
 
-    return Object.values(map);
-  }, [activeOrders, selectedSection]);
+    const dineInPaidRevenue = dineInCashRevenue + dineInUpiRevenue;
+
+    let pickupCashRevenue = 0;
+    let pickupUpiRevenue = 0;
+    let pickupCashCount = 0;
+    let pickupUpiCount = 0;
+    const pickupTransactions = [];
+
+    filteredPickupOrders.forEach((o) => {
+      if (isPaid(o)) {
+        const amt = Number(o.payment.amount) || Number(o.subtotal) || 0;
+        const method = String(o.payment.method || '').toUpperCase();
+        if (method === 'CASH') {
+          pickupCashRevenue += amt;
+          pickupCashCount += 1;
+        } else if (method === 'UPI') {
+          pickupUpiRevenue += amt;
+          pickupUpiCount += 1;
+        }
+        pickupTransactions.push({
+          orderId: o.orderId || o._id,
+          orderType: 'PICKUP',
+          tableNumber: null,
+          tableId: null,
+          method: method || 'CASH',
+          amount: amt,
+          status: o.payment.status || 'COMPLETED',
+          timestamp: o.payment.recordedAt || o.createdAt,
+          customerName: o.customer?.name || null,
+          recordedBy: o.payment.recordedBy || null,
+        });
+      }
+    });
+
+    const pickupPaidRevenue = pickupCashRevenue + pickupUpiRevenue;
+
+    const totalCashRevenue = dineInCashRevenue + pickupCashRevenue;
+    const totalUpiRevenue = dineInUpiRevenue + pickupUpiRevenue;
+    const totalPaidRevenue = totalCashRevenue + totalUpiRevenue;
+
+    const totalCashCount = dineInCashCount + pickupCashCount;
+    const totalUpiCount = dineInUpiCount + pickupUpiCount;
+    const totalPaidCount = totalCashCount + totalUpiCount;
+
+    const allTransactions = [...dineInTransactions, ...pickupTransactions].sort((a, b) => {
+      const timeA = new Date(a.timestamp || 0).getTime();
+      const timeB = new Date(b.timestamp || 0).getTime();
+      return timeB - timeA;
+    });
+
+    return {
+      totalCashRevenue,
+      totalUpiRevenue,
+      totalPaidRevenue,
+      totalCashCount,
+      totalUpiCount,
+      totalPaidCount,
+      dineInCashRevenue,
+      dineInUpiRevenue,
+      dineInPaidRevenue,
+      dineInCashCount,
+      dineInUpiCount,
+      dineInPaidCount: dineInCashCount + dineInUpiCount,
+      dineInTransactions,
+      pickupCashRevenue,
+      pickupUpiRevenue,
+      pickupPaidRevenue,
+      pickupCashCount,
+      pickupUpiCount,
+      pickupPaidCount: pickupCashCount + pickupUpiCount,
+      pickupTransactions,
+      allTransactions,
+    };
+  }, [filteredDineInOrders, filteredPickupOrders]);
+
+  const displayedTransactions = useMemo(() => {
+    if (transactionTab === 'DINE_IN') {
+      return paymentAnalytics.dineInTransactions;
+    }
+    if (transactionTab === 'PICKUP') {
+      return paymentAnalytics.pickupTransactions;
+    }
+    return paymentAnalytics.allTransactions;
+  }, [transactionTab, paymentAnalytics]);
 
   // 10. Category Performance Breakdown
   const categoryPerformance = useMemo(() => {
@@ -727,69 +850,75 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
 
-        {/* Metric 4: Preparing */}
-        <div className="bg-white rounded-2xl border border-amber-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
-          <div className="flex items-start justify-between gap-1.5 mb-2">
-            <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider leading-tight break-words">
-              Preparing
-            </span>
-            <div className="w-7 h-7 shrink-0 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343a7.975 7.975 0 012.343 5.657c0 2.122-.858 4.156-2.342 5.657z" />
-              </svg>
+        {/* Metric 4: Preparing (Hidden when Dine-in QR Analytics is selected; visible for Parcel Pickup Analytics) */}
+        {selectedSection !== 'DINE_IN' && (
+          <div className="bg-white rounded-2xl border border-amber-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
+            <div className="flex items-start justify-between gap-1.5 mb-2">
+              <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider leading-tight break-words">
+                Preparing
+              </span>
+              <div className="w-7 h-7 shrink-0 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343a7.975 7.975 0 012.343 5.657c0 2.122-.858 4.156-2.342 5.657z" />
+                </svg>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-1.5 mt-auto pt-1">
+              <span className="text-xl sm:text-2xl font-black text-amber-900 font-sans tracking-tight">
+                {stats.preparing}
+              </span>
+              <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">
+                Kitchen
+              </span>
             </div>
           </div>
-          <div className="flex items-center justify-between gap-1.5 mt-auto pt-1">
-            <span className="text-xl sm:text-2xl font-black text-amber-900 font-sans tracking-tight">
-              {stats.preparing}
-            </span>
-            <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">
-              Kitchen
-            </span>
-          </div>
-        </div>
+        )}
 
-        {/* Metric 5: Ready to Serve / Ready for Pickup */}
-        <div className="bg-white rounded-2xl border border-teal-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
-          <div className="flex items-start justify-between gap-1.5 mb-2">
-            <span className="text-[11px] font-bold text-teal-800 uppercase tracking-wider leading-tight break-words">
-              {selectedSection === 'DINE_IN' ? 'Ready to Serve' : 'Ready for Pickup'}
-            </span>
-            <div className="w-7 h-7 shrink-0 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+        {/* Metric 5: Ready to Serve / Ready for Pickup (Hidden when Dine-in QR Analytics is selected; visible for Parcel Pickup Analytics) */}
+        {selectedSection !== 'DINE_IN' && (
+          <div className="bg-white rounded-2xl border border-teal-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
+            <div className="flex items-start justify-between gap-1.5 mb-2">
+              <span className="text-[11px] font-bold text-teal-800 uppercase tracking-wider leading-tight break-words">
+                {selectedSection === 'DINE_IN' ? 'Ready to Serve' : 'Ready for Pickup'}
+              </span>
+              <div className="w-7 h-7 shrink-0 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-1.5 mt-auto pt-1">
+              <span className="text-xl sm:text-2xl font-black text-teal-900 font-sans tracking-tight">
+                {stats.ready}
+              </span>
+              <span className="text-[10px] font-bold text-teal-700 bg-teal-100 px-2 py-0.5 rounded-full shrink-0">
+                Ready
+              </span>
             </div>
           </div>
-          <div className="flex items-center justify-between gap-1.5 mt-auto pt-1">
-            <span className="text-xl sm:text-2xl font-black text-teal-900 font-sans tracking-tight">
-              {stats.ready}
-            </span>
-            <span className="text-[10px] font-bold text-teal-700 bg-teal-100 px-2 py-0.5 rounded-full shrink-0">
-              Ready
-            </span>
-          </div>
-        </div>
+        )}
 
-        {/* Metric 6: Served / Picked Up (Completed) */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
-          <div className="flex items-start justify-between gap-1.5 mb-2">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider leading-tight break-words">
-              {selectedSection === 'DINE_IN' ? 'Served' : 'Picked Up'}
-            </span>
-            <div className="w-7 h-7 shrink-0 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
-              ✓
+        {/* Metric 6: Served / Picked Up (Hidden when Dine-in QR Analytics is selected; visible for Parcel Pickup Analytics) */}
+        {selectedSection !== 'DINE_IN' && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
+            <div className="flex items-start justify-between gap-1.5 mb-2">
+              <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider leading-tight break-words">
+                {selectedSection === 'DINE_IN' ? 'Served' : 'Picked Up'}
+              </span>
+              <div className="w-7 h-7 shrink-0 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                ✓
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-1.5 mt-auto pt-1">
+              <span className="text-xl sm:text-2xl font-black text-slate-800 font-sans tracking-tight">
+                {stats.completed}
+              </span>
+              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
+                Completed
+              </span>
             </div>
           </div>
-          <div className="flex items-center justify-between gap-1.5 mt-auto pt-1">
-            <span className="text-xl sm:text-2xl font-black text-slate-800 font-sans tracking-tight">
-              {stats.completed}
-            </span>
-            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
-              Completed
-            </span>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* ============================================================== */}
@@ -1137,85 +1266,351 @@ export default function AdminAnalyticsPage() {
       )}
 
       {/* ============================================================== */}
-      {/* 8. PAYMENT METHOD & SETTLEMENT BREAKDOWN                       */}
+      {/* 8. VERIFIED PAYMENT REVENUE & SETTLEMENT AUDIT                 */}
       {/* ============================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Payment Breakdown Card */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
-          <div className="pb-3 border-b border-slate-100">
-            <h2 className="text-base font-extrabold text-slate-900">
-              {selectedSection === 'DINE_IN' ? 'Dine-In Settlement Methods' : 'Parcel Pickup Settlement Methods'}
-            </h2>
-            <p className="text-xs text-slate-500">
-              {selectedSection === 'DINE_IN'
-                ? 'Table dining sessions settle in-hall or at the front counter via Cash/UPI.'
-                : 'Customer takeaway parcels are paid and collected directly at the pickup counter.'}
+      <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-6">
+        {/* Section Header with Reconciliation Badge */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
+                Verified Payment Revenue & Settlement Audit
+              </h2>
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Audit Verified
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Server-validated Cash &amp; UPI receipts. Unpaid orders are excluded. Totals strictly reconcile: Cash + UPI = Total Paid.
             </p>
           </div>
 
-          {paymentBreakdown.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 text-xs font-medium">No payment data recorded</div>
-          ) : (
-            <div className="space-y-3 my-auto">
-              {paymentBreakdown.map((pm) => (
-                <div
-                  key={pm.method}
-                  className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-100 flex items-center justify-between text-xs"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
-                      ₹
-                    </span>
-                    <div>
-                      <span className="font-bold text-slate-900 block">{pm.method}</span>
-                      <span className="text-[11px] text-slate-500">{pm.count} transactions</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-black text-sm text-slate-900 font-sans block">₹{pm.amount}</span>
-                    <span className="text-[10px] text-emerald-700 font-semibold">100% Settled</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-bold text-slate-700 shrink-0">
+            <span className="text-emerald-600 font-black">✓</span>
+            <span>Reconciled: ₹{paymentAnalytics.totalCashRevenue} + ₹{paymentAnalytics.totalUpiRevenue} = ₹{paymentAnalytics.totalPaidRevenue}</span>
+          </div>
         </div>
 
-        {/* Category Performance Summary */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
-          <div className="pb-3 border-b border-slate-100">
-            <h2 className="text-base font-extrabold text-slate-900">
-              {selectedSection === 'DINE_IN' ? 'Dine-in Category Sales' : 'Parcel Category Sales'}
-            </h2>
-            <p className="text-xs text-slate-500">Revenue contribution grouped across food menu categories.</p>
+        {/* 1. Top 3 Aggregate Payment Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Total Paid Revenue */}
+          <div className="rounded-2xl border border-emerald-300 bg-gradient-to-br from-emerald-50/70 to-emerald-100/40 p-4 sm:p-5 flex flex-col justify-between shadow-2xs">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">
+                Total Paid Revenue
+              </span>
+              <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white font-black text-sm flex items-center justify-center shadow-xs">
+                ₹
+              </span>
+            </div>
+            <div className="my-2">
+              <div className="text-2xl sm:text-3xl font-black text-emerald-950 font-sans tracking-tight">
+                ₹{paymentAnalytics.totalPaidRevenue.toLocaleString('en-IN')}
+              </div>
+              <div className="text-xs font-semibold text-emerald-800/80 mt-0.5">
+                {paymentAnalytics.totalPaidCount} Verified Payments Recorded
+              </div>
+            </div>
+            <div className="pt-2 border-t border-emerald-200/80 text-[11px] font-semibold text-emerald-800 flex items-center justify-between">
+              <span>Cash: ₹{paymentAnalytics.totalCashRevenue.toLocaleString('en-IN')}</span>
+              <span>UPI: ₹{paymentAnalytics.totalUpiRevenue.toLocaleString('en-IN')}</span>
+            </div>
           </div>
 
-          {categoryPerformance.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 text-xs font-medium">No category sales recorded</div>
+          {/* Total Cash Revenue */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 flex flex-col justify-between shadow-2xs">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                Total Cash Revenue
+              </span>
+              <span className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs flex items-center justify-center shadow-2xs">
+                💵
+              </span>
+            </div>
+            <div className="my-2">
+              <div className="text-2xl sm:text-3xl font-black text-slate-900 font-sans tracking-tight">
+                ₹{paymentAnalytics.totalCashRevenue.toLocaleString('en-IN')}
+              </div>
+              <div className="text-xs font-semibold text-slate-500 mt-0.5">
+                {paymentAnalytics.totalCashCount} Cash Settlements
+              </div>
+            </div>
+            <div className="pt-2 border-t border-slate-100 text-[11px] font-semibold text-slate-600 flex items-center justify-between">
+              <span>Dine-in: ₹{paymentAnalytics.dineInCashRevenue.toLocaleString('en-IN')}</span>
+              <span>Pickup: ₹{paymentAnalytics.pickupCashRevenue.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+
+          {/* Total UPI Revenue */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 flex flex-col justify-between shadow-2xs">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">
+                Total UPI Revenue
+              </span>
+              <span className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold text-xs flex items-center justify-center shadow-2xs">
+                📱
+              </span>
+            </div>
+            <div className="my-2">
+              <div className="text-2xl sm:text-3xl font-black text-slate-900 font-sans tracking-tight">
+                ₹{paymentAnalytics.totalUpiRevenue.toLocaleString('en-IN')}
+              </div>
+              <div className="text-xs font-semibold text-slate-500 mt-0.5">
+                {paymentAnalytics.totalUpiCount} UPI Settlements
+              </div>
+            </div>
+            <div className="pt-2 border-t border-slate-100 text-[11px] font-semibold text-slate-600 flex items-center justify-between">
+              <span>Dine-in: ₹{paymentAnalytics.dineInUpiRevenue.toLocaleString('en-IN')}</span>
+              <span>Pickup: ₹{paymentAnalytics.pickupUpiRevenue.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Segregated Channel Payment Summaries (Dine-in vs Parcel Pickup) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Dine-in QR Payment Revenue */}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-lg bg-primary text-white text-xs font-bold flex items-center justify-center">
+                  🍽
+                </span>
+                <span className="font-extrabold text-sm text-slate-900">Dine-in QR Revenue</span>
+              </div>
+              <span className="text-xs font-bold font-sans text-slate-900">
+                Total Paid: ₹{paymentAnalytics.dineInPaidRevenue.toLocaleString('en-IN')}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="bg-white rounded-xl border border-slate-200/80 p-3">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Dine-in Cash
+                </span>
+                <span className="text-lg font-black text-slate-900 font-sans mt-0.5 block">
+                  ₹{paymentAnalytics.dineInCashRevenue.toLocaleString('en-IN')}
+                </span>
+                <span className="text-[11px] font-medium text-slate-500">
+                  {paymentAnalytics.dineInCashCount} settlements
+                </span>
+              </div>
+
+              <div className="bg-white rounded-xl border border-slate-200/80 p-3">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Dine-in UPI
+                </span>
+                <span className="text-lg font-black text-indigo-900 font-sans mt-0.5 block">
+                  ₹{paymentAnalytics.dineInUpiRevenue.toLocaleString('en-IN')}
+                </span>
+                <span className="text-[11px] font-medium text-slate-500">
+                  {paymentAnalytics.dineInUpiCount} settlements
+                </span>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1">
+              <span>{paymentAnalytics.dineInPaidCount} settled dine-in orders</span>
+              <span className="font-mono font-bold text-slate-700">₹{paymentAnalytics.dineInCashRevenue} + ₹{paymentAnalytics.dineInUpiRevenue} = ₹{paymentAnalytics.dineInPaidRevenue}</span>
+            </div>
+          </div>
+
+          {/* Parcel Pickup Payment Revenue */}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-lg bg-accent text-primary text-xs font-bold flex items-center justify-center">
+                  🛍
+                </span>
+                <span className="font-extrabold text-sm text-slate-900">Parcel Pickup Revenue</span>
+              </div>
+              <span className="text-xs font-bold font-sans text-slate-900">
+                Total Paid: ₹{paymentAnalytics.pickupPaidRevenue.toLocaleString('en-IN')}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="bg-white rounded-xl border border-slate-200/80 p-3">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Pickup Cash
+                </span>
+                <span className="text-lg font-black text-slate-900 font-sans mt-0.5 block">
+                  ₹{paymentAnalytics.pickupCashRevenue.toLocaleString('en-IN')}
+                </span>
+                <span className="text-[11px] font-medium text-slate-500">
+                  {paymentAnalytics.pickupCashCount} settlements
+                </span>
+              </div>
+
+              <div className="bg-white rounded-xl border border-slate-200/80 p-3">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Pickup UPI
+                </span>
+                <span className="text-lg font-black text-indigo-900 font-sans mt-0.5 block">
+                  ₹{paymentAnalytics.pickupUpiRevenue.toLocaleString('en-IN')}
+                </span>
+                <span className="text-[11px] font-medium text-slate-500">
+                  {paymentAnalytics.pickupUpiCount} settlements
+                </span>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1">
+              <span>{paymentAnalytics.pickupPaidCount} settled pickup orders</span>
+              <span className="font-mono font-bold text-slate-700">₹{paymentAnalytics.pickupCashRevenue} + ₹{paymentAnalytics.pickupUpiRevenue} = ₹{paymentAnalytics.pickupPaidRevenue}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Verified Transaction Breakdown Table */}
+        <div className="pt-2 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-100">
+            <div>
+              <h3 className="text-sm font-extrabold text-slate-900">
+                Verified Transactions Log
+              </h3>
+              <p className="text-xs text-slate-500">
+                Confirmed payments matching the active date filter ({dateFilter === 'ALL' ? 'All Time' : dateFilter === 'TODAY' ? 'Today' : dateFilter === 'WEEK' ? 'Last 7 Days' : 'Last 30 Days'}).
+              </p>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="inline-flex rounded-xl p-1 bg-slate-100 border border-slate-200 text-xs font-bold" role="group" aria-label="Transaction Filter">
+              <button
+                type="button"
+                onClick={() => setTransactionTab('ALL')}
+                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                  transactionTab === 'ALL' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                All ({paymentAnalytics.allTransactions.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setTransactionTab('DINE_IN')}
+                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                  transactionTab === 'DINE_IN' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Dine-in ({paymentAnalytics.dineInPaidCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setTransactionTab('PICKUP')}
+                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                  transactionTab === 'PICKUP' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Parcel ({paymentAnalytics.pickupPaidCount})
+              </button>
+            </div>
+          </div>
+
+          {displayedTransactions.length === 0 ? (
+            <div className="py-10 text-center text-slate-400 text-xs font-medium rounded-2xl bg-slate-50 border border-dashed border-slate-200">
+              No verified payments recorded for this category and date filter. Payments confirmed in Orders Management appear here immediately.
+            </div>
           ) : (
-            <div className="space-y-2.5 my-auto max-h-64 overflow-y-auto pr-1">
-              {categoryPerformance.slice(0, 6).map((cat) => (
-                <div key={cat.category} className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100 space-y-1">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-slate-800">{cat.category}</span>
-                    <span className="font-black text-slate-900 font-sans">₹{cat.revenue}</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1 overflow-hidden">
-                    <div
-                      className="bg-accent h-1 rounded-full transition-all"
-                      style={{
-                        width: `${Math.min(
-                          100,
-                          Math.round((cat.revenue / (categoryPerformance[0]?.revenue || 1)) * 100)
-                        )}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse" aria-label="Verified Transactions Table">
+                <thead>
+                  <tr className="border-b border-slate-200 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                    <th className="py-2.5 px-3">Payment Method</th>
+                    <th className="py-2.5 px-3">Order ID</th>
+                    <th className="py-2.5 px-3">Order Type</th>
+                    <th className="py-2.5 px-3 text-right">Amount</th>
+                    <th className="py-2.5 px-3 text-center">Payment Status</th>
+                    <th className="py-2.5 px-3 text-right">Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {displayedTransactions.map((txn, idx) => (
+                    <tr key={`${txn.orderId}-${idx}`} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-3">
+                        {txn.method === 'CASH' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                            Cash
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-200 font-bold text-xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
+                            UPI
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-3 font-mono font-bold text-slate-900">
+                        <Link
+                          to={`/admin/orders/${txn.orderId}`}
+                          className="hover:text-accent hover:underline"
+                        >
+                          {txn.orderId}
+                        </Link>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="font-semibold text-slate-700">
+                          {txn.orderType === 'DINE_IN'
+                            ? `Dine-in QR ${txn.tableNumber ? `(Table #${txn.tableNumber})` : ''}`
+                            : 'Parcel Pickup'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-right font-black text-slate-900 font-sans text-sm">
+                        ₹{txn.amount}
+                      </td>
+                      <td className="py-3 px-3 text-center">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          <span>✓</span>
+                          <span>Completed</span>
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-right text-slate-500 font-medium whitespace-nowrap">
+                        {formatPaymentTimestamp(txn.timestamp)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* 9. CATEGORY PERFORMANCE SUMMARY                               */}
+      {/* ============================================================== */}
+      <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
+        <div className="pb-3 border-b border-slate-100">
+          <h2 className="text-base font-extrabold text-slate-900">
+            {selectedSection === 'DINE_IN' ? 'Dine-in Category Sales' : 'Parcel Category Sales'}
+          </h2>
+          <p className="text-xs text-slate-500">Revenue contribution grouped across food menu categories.</p>
+        </div>
+
+        {categoryPerformance.length === 0 ? (
+          <div className="py-12 text-center text-slate-400 text-xs font-medium">No category sales recorded</div>
+        ) : (
+          <div className="space-y-2.5 my-auto max-h-64 overflow-y-auto pr-1">
+            {categoryPerformance.slice(0, 6).map((cat) => (
+              <div key={cat.category} className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-100 space-y-1">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-slate-800">{cat.category}</span>
+                  <span className="font-black text-slate-900 font-sans">₹{cat.revenue}</span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-1 overflow-hidden">
+                  <div
+                    className="bg-accent h-1 rounded-full transition-all"
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        Math.round((cat.revenue / (categoryPerformance[0]?.revenue || 1)) * 100)
+                      )}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

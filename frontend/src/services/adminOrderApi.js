@@ -330,6 +330,242 @@ export const adminOrderApi = {
       };
     }
   },
+
+  /**
+   * Record manual Cash or UPI payment for an order (Admin Only).
+   * POST /api/admin/orders/:orderId/payment
+   *
+   * @param {string} orderId
+   * @param {Object} paymentData
+   * @param {'CASH'|'UPI'} paymentData.method
+   * @param {number} [paymentData.amount]
+   * @param {string} [paymentData.note]
+   * @returns {Promise<{ success: boolean, order?: Object, message?: string, error?: string }>}
+   */
+  async recordOrderPayment(orderId, paymentData) {
+    if (!orderId || typeof orderId !== 'string' || !orderId.trim()) {
+      return { success: false, error: 'Order reference is required.' };
+    }
+    if (!paymentData || !paymentData.method) {
+      return { success: false, error: 'Payment method (CASH or UPI) is required.' };
+    }
+
+    const cleanId = orderId.trim();
+
+    try {
+      const response = await api.post(`/admin/orders/${encodeURIComponent(cleanId)}/payment`, paymentData);
+
+      if (response && response.success && response.data) {
+        const normalized = normalizeBackendOrder(response.data);
+        return {
+          success: true,
+          order: normalized,
+          message: response.message || 'Payment recorded successfully.',
+        };
+      }
+
+      return {
+        success: false,
+        error: response?.message || 'Unable to record payment.',
+      };
+    } catch (err) {
+      console.warn(`[adminOrderApi.recordOrderPayment] Failed for ${cleanId}:`, err.message);
+      return {
+        success: false,
+        error: err.message || 'Unable to record payment.',
+      };
+    }
+  },
+
+  /**
+   * Retrieve verified payment revenue analytics (Admin Only).
+   * GET /api/admin/orders/payments/analytics
+   *
+   * @param {Object} [options]
+   * @param {string} [options.dateFilter] - 'ALL' | 'TODAY' | 'WEEK' | 'MONTH'
+   * @param {string} [options.startDate]
+   * @param {string} [options.endDate]
+   * @returns {Promise<{ success: boolean, data?: Object, error?: string }>}
+   */
+  async getPaymentAnalytics(options = {}) {
+    const params = new URLSearchParams();
+    if (options.dateFilter && options.dateFilter !== 'ALL') {
+      params.set('dateFilter', options.dateFilter);
+    }
+    if (options.startDate) params.set('startDate', options.startDate);
+    if (options.endDate) params.set('endDate', options.endDate);
+
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+
+    try {
+      const response = await api.get(`/admin/orders/payments/analytics${queryString}`);
+
+      if (response && response.success && response.data) {
+        return {
+          success: true,
+          data: response.data,
+        };
+      }
+
+      return {
+        success: false,
+        error: response?.message || 'Unable to fetch payment analytics.',
+      };
+    } catch (err) {
+      console.warn('[adminOrderApi.getPaymentAnalytics] Failed:', err.message);
+      return {
+        success: false,
+        error: err.message || 'Unable to fetch payment analytics.',
+      };
+    }
+  },
+
+  /**
+   * Retrieve Cash & UPI Transactions Report with filtering and summary metrics (Admin Only).
+   * GET /api/admin/transactions/report
+   *
+   * @param {Object} [options]
+   * @param {string} [options.month]
+   * @param {string} [options.year]
+   * @param {string} [options.startDate]
+   * @param {string} [options.endDate]
+   * @param {string} [options.quickFilter]
+   * @param {string} [options.method]
+   * @param {string} [options.orderType]
+   * @param {string} [options.paymentStatus]
+   * @param {string} [options.search]
+   * @returns {Promise<{ success: boolean, summary?: Object, transactions?: Array, error?: string }>}
+   */
+  async getTransactionReport(options = {}) {
+    const params = new URLSearchParams();
+    if (options.month) params.set('month', String(options.month));
+    if (options.year) params.set('year', String(options.year));
+    if (options.startDate) params.set('startDate', options.startDate);
+    if (options.endDate) params.set('endDate', options.endDate);
+    if (options.quickFilter && options.quickFilter !== 'ALL') params.set('quickFilter', options.quickFilter);
+    if (options.method && options.method !== 'ALL') params.set('method', options.method);
+    if (options.orderType && options.orderType !== 'ALL') params.set('orderType', options.orderType);
+    if (options.paymentStatus && options.paymentStatus !== 'ALL') params.set('paymentStatus', options.paymentStatus);
+    if (options.search && options.search.trim()) params.set('search', options.search.trim());
+
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+
+    try {
+      const response = await api.get(`/admin/transactions/report${queryString}`);
+
+      if (response && response.success && response.data) {
+        return {
+          success: true,
+          summary: response.data.summary || {},
+          transactions: Array.isArray(response.data.transactions) ? response.data.transactions : [],
+        };
+      }
+
+      return {
+        success: false,
+        summary: {},
+        transactions: [],
+        error: response?.message || 'Unable to fetch transaction report.',
+      };
+    } catch (err) {
+      console.warn('[adminOrderApi.getTransactionReport] Failed:', err.message);
+      return {
+        success: false,
+        summary: {},
+        transactions: [],
+        error: err.message || 'Unable to fetch transaction report.',
+      };
+    }
+  },
+
+  /**
+   * Preview transaction count & total amount before deletion (Admin Only)
+   * @param {Object} options
+   * @param {number|string} options.year
+   * @param {number|string} options.month
+   * @param {number|string} [options.day]
+   * @param {string} [options.method]
+   * @returns {Promise<{ success: boolean, count: number, totalAmount: number, error?: string }>}
+   */
+  async getTransactionsDeletePreview(options = {}) {
+    const params = new URLSearchParams();
+    if (options.year) params.set('year', String(options.year));
+    if (options.month) params.set('month', String(options.month));
+    if (options.day && options.day !== 'ALL') params.set('day', String(options.day));
+    if (options.method && options.method !== 'ALL') params.set('method', options.method);
+
+    const qs = params.toString() ? `?${params.toString()}` : '';
+
+    try {
+      const response = await api.get(`/admin/transactions/preview${qs}`);
+      if (response && response.success && response.data) {
+        return {
+          success: true,
+          count: response.data.count || 0,
+          totalAmount: response.data.totalAmount || 0,
+        };
+      }
+      return {
+        success: false,
+        count: 0,
+        totalAmount: 0,
+        error: response?.message || 'Failed to fetch preview.',
+      };
+    } catch (err) {
+      console.warn('[adminOrderApi.getTransactionsDeletePreview] Failed:', err.message);
+      return {
+        success: false,
+        count: 0,
+        totalAmount: 0,
+        error: err.message || 'Failed to fetch preview.',
+      };
+    }
+  },
+
+  /**
+   * Delete transactions matching year, month, optional day, and payment method (Admin Only)
+   * @param {Object} options
+   * @param {number|string} options.year
+   * @param {number|string} options.month
+   * @param {number|string} [options.day]
+   * @param {string} [options.method]
+   * @returns {Promise<{ success: boolean, deletedCount: number, deletedAmount: number, message?: string, error?: string }>}
+   */
+  async deleteTransactions(options = {}) {
+    const params = new URLSearchParams();
+    if (options.year) params.set('year', String(options.year));
+    if (options.month) params.set('month', String(options.month));
+    if (options.day && options.day !== 'ALL') params.set('day', String(options.day));
+    if (options.method && options.method !== 'ALL') params.set('method', options.method);
+
+    const qs = params.toString() ? `?${params.toString()}` : '';
+
+    try {
+      const response = await api.delete(`/admin/transactions${qs}`);
+      if (response && response.success) {
+        return {
+          success: true,
+          deletedCount: response.deletedCount || 0,
+          deletedAmount: response.deletedAmount || 0,
+          message: response.message || 'Transactions deleted successfully.',
+        };
+      }
+      return {
+        success: false,
+        deletedCount: 0,
+        deletedAmount: 0,
+        error: response?.message || 'Failed to delete transactions.',
+      };
+    } catch (err) {
+      console.warn('[adminOrderApi.deleteTransactions] Failed:', err.message);
+      return {
+        success: false,
+        deletedCount: 0,
+        deletedAmount: 0,
+        error: err.message || 'Failed to delete transactions.',
+      };
+    }
+  },
 };
 
 export default adminOrderApi;

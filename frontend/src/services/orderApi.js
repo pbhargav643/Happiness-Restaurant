@@ -120,6 +120,16 @@ export function normalizeBackendOrder(order) {
     status: order.status || 'PLACED',
     subtotal: Number(order.subtotal) || 0,
     readyTime: order.readyTime || null,
+    payment: order.payment
+      ? {
+          method: order.payment.method,
+          amount: Number(order.payment.amount) || Number(order.subtotal) || 0,
+          status: order.payment.status || 'COMPLETED',
+          recordedAt: order.payment.recordedAt || null,
+          recordedBy: order.payment.recordedBy || null,
+          transactionNote: order.payment.transactionNote || null,
+        }
+      : null,
     createdAt: order.createdAt || new Date().toISOString(),
     updatedAt: order.updatedAt || order.createdAt || new Date().toISOString(),
     customer: {
