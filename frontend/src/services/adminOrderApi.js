@@ -38,6 +38,9 @@ export const adminOrderApi = {
     if (options.pickupDate && options.pickupDate !== 'ALL') {
       params.set('pickupDate', options.pickupDate);
     }
+    if (options.orderType && options.orderType !== 'ALL') {
+      params.set('orderType', options.orderType.toUpperCase());
+    }
     if (options.search && options.search.trim()) {
       params.set('search', options.search.trim());
     }

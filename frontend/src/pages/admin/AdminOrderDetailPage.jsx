@@ -760,8 +760,8 @@ export default function AdminOrderDetailPage() {
               </button>
             </div>
 
-            {/* Provider Configuration Indicators */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            {/* Provider Configuration Indicator */}
+            <div className="text-xs">
               <div className="p-2.5 rounded-xl bg-secondary/60 border border-surface-border flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-primary text-[11px]">WhatsApp:</span>
@@ -776,30 +776,13 @@ export default function AdminOrderDetailPage() {
                   {providerStatus.whatsapp === 'CONFIGURED' ? 'Configured' : 'Not Configured'}
                 </span>
               </div>
-
-              <div className="p-2.5 rounded-xl bg-secondary/60 border border-surface-border flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-primary text-[11px]">SMS:</span>
-                </div>
-                <span
-                  className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-md ${
-                    providerStatus.sms === 'CONFIGURED'
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                      : 'bg-slate-100 text-slate-600 border border-slate-300'
-                  }`}
-                >
-                  {providerStatus.sms === 'CONFIGURED' ? 'Configured' : 'Not Configured'}
-                </span>
-              </div>
             </div>
 
             {/* Notification Delivery Status List */}
             <div className="space-y-2 pt-1">
-              {['WHATSAPP', 'SMS'].map((channel) => {
+              {['WHATSAPP'].map((channel) => {
                 const latestLog = notifications.find((n) => n.channel === channel);
-                const isConfigured = channel === 'WHATSAPP'
-                  ? providerStatus.whatsapp === 'CONFIGURED'
-                  : providerStatus.sms === 'CONFIGURED';
+                const isConfigured = providerStatus.whatsapp === 'CONFIGURED';
 
                 let statusBadge;
                 let statusDetail = null;
@@ -862,7 +845,7 @@ export default function AdminOrderDetailPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <strong className="text-primary font-bold">
-                          {channel === 'WHATSAPP' ? 'WhatsApp' : 'SMS'}
+                          WhatsApp
                         </strong>
                         {statusBadge}
                       </div>

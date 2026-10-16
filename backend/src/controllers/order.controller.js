@@ -144,7 +144,7 @@ export const orderController = {
    */
   async getAdminOrders(req, res, next) {
     try {
-      const { status, pickupDate, date, search, sort, order, page, limit } = req.query;
+      const { status, pickupDate, date, search, sort, order, page, limit, orderType } = req.query;
 
       const result = await orderService.getAdminOrders({
         status,
@@ -155,6 +155,7 @@ export const orderController = {
         order,
         page,
         limit,
+        orderType,
       });
 
       return res.status(200).json({

@@ -75,6 +75,8 @@ export function getCustomerFriendlyStatus(status) {
       return 'Ready for Pickup';
     case 'PICKED UP':
       return 'Picked Up';
+    case 'SERVED':
+      return 'Served';
     case 'PLACED':
     default:
       return 'Order Placed';
@@ -84,7 +86,7 @@ export function getCustomerFriendlyStatus(status) {
 /**
  * OrderStatusIndicator Component
  * Visual 4-stage progression indicator:
- * PLACED -> PREPARING -> READY -> PICKED UP
+ * PLACED -> PREPARING -> READY -> PICKED UP / SERVED
  *
  * Implements:
  * - Accurate display of stored status (no automatic / simulated changes)
@@ -116,6 +118,8 @@ export default function OrderStatusIndicator({
         return 'bg-emerald-100 text-emerald-900 border-emerald-300 ring-2 ring-emerald-400/40 animate-pulse';
       case 'PICKED UP':
         return 'bg-slate-100 text-slate-700 border-slate-300';
+      case 'SERVED':
+        return 'bg-emerald-100 text-emerald-900 border-emerald-300';
       case 'PLACED':
       default:
         return 'bg-sky-100 text-sky-900 border-sky-300';

@@ -45,7 +45,7 @@ export function getOrderStatusDescription(status) {
 export function isOrderCompleted(status) {
   if (!status) return false;
   const normalized = String(status).trim().toUpperCase();
-  return normalized === 'PICKED UP' || normalized === 'PICKED_UP';
+  return normalized === 'PICKED UP' || normalized === 'PICKED_UP' || normalized === 'SERVED';
 }
 
 /**
@@ -53,7 +53,7 @@ export function isOrderCompleted(status) {
  * 0: PLACED
  * 1: PREPARING
  * 2: READY
- * 3: PICKED UP
+ * 3: PICKED UP / SERVED
  */
 export function getOrderStatusStepIndex(status) {
   if (!status) return 0;
@@ -61,7 +61,7 @@ export function getOrderStatusStepIndex(status) {
   if (normalized === 'PLACED') return 0;
   if (normalized === 'PREPARING') return 1;
   if (normalized === 'READY') return 2;
-  if (normalized === 'PICKED UP' || normalized === 'PICKED_UP') return 3;
+  if (normalized === 'PICKED UP' || normalized === 'PICKED_UP' || normalized === 'SERVED') return 3;
   return 0;
 }
 

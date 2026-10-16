@@ -251,17 +251,23 @@ input, button, textarea, select {
 /* ==========================================================================
    Menu Fixed Sidebar Custom Scrollbar
    ========================================================================== */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #D1C7B7 #F4EFE6;
+}
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(212, 175, 55, 0.25);
+  background: #F4EFE6;
   border-radius: 9999px;
 }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #D1C7B7;
+  border-radius: 9999px;
+  border: 1px solid #F4EFE6;
+}
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(212, 175, 55, 0.6);
+  background: #B89628;
 }
 

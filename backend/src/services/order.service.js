@@ -545,8 +545,16 @@ export const orderService = {
     // 1. Status Filter
     if (status && typeof status === 'string' && status.trim()) {
       const cleanStatus = status.trim().toUpperCase();
-      if (['PLACED', 'PREPARING', 'READY', 'PICKED_UP'].includes(cleanStatus)) {
+      if (['PLACED', 'PREPARING', 'READY', 'PICKED_UP', 'SERVED'].includes(cleanStatus)) {
         query.status = cleanStatus;
+      }
+    }
+
+    // 1b. Order Type Filter (DINE_IN or PICKUP)
+    if (options.orderType && typeof options.orderType === 'string' && options.orderType.trim()) {
+      const cleanType = options.orderType.trim().toUpperCase();
+      if (['DINE_IN', 'PICKUP'].includes(cleanType)) {
+        query.orderType = cleanType;
       }
     }
 

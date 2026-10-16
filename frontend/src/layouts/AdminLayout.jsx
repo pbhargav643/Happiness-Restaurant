@@ -17,7 +17,7 @@ const NAV_LINKS = [
     ),
   },
   {
-    name: 'Orders Queue',
+    name: 'Orders Management',
     path: '/admin/orders',
     end: false,
     icon: (
@@ -262,10 +262,10 @@ export default function AdminLayout() {
 
             <div>
               <span className="text-xs sm:text-sm font-bold text-primary block">
-                Parcel Pickup Counter Desk
+                Orders Management & Operations
               </span>
               <span className="text-[10px] text-muted hidden sm:block">
-                Takeaway Kitchen & Order Management
+                Dine-in QR Sessions & Parcel Pickup Tracking
               </span>
             </div>
           </div>

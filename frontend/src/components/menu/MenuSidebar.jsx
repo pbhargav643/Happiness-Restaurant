@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
 /**
  * MenuSidebar Component
- * Unified, responsive Filters & Search sidebar:
+ * Unified, responsive Filters & Search sidebar matching reference design:
  * - Direct real-time dish search with clear control
  * - Multi-option sorting (Default, Price Asc/Desc, Name A-Z/Z-A)
- * - Complete vertical category navigation list displaying all 16 categories naturally
- * - No internal scrollbar or height clipping; card expands vertically with its content
- * - Uses normal document scrolling when page viewport cannot accommodate full card
+ * - Fixed Categories heading and total count
+ * - Independently vertically scrollable category list with visible, subtle scrollbar
+ * - All 16 categories accessible with active category kept in view
+ * - Fully responsive across mobile, tablet, laptop, and desktop
  */
 export default function MenuSidebar({
   categories = [],
@@ -23,6 +24,23 @@ export default function MenuSidebar({
   hasActiveFilters = false,
   onClearFilters,
 }) {
+  const listRef = useRef(null);
+  const activeItemRef = useRef(null);
+
+  // Keep active category visible in scrollable list when selected
+  useEffect(() => {
+    if (activeItemRef.current && listRef.current) {
+      const list = listRef.current;
+      const item = activeItemRef.current;
+      const itemTop = item.offsetTop;
+      const itemBottom = itemTop + item.offsetHeight;
+      if (itemTop < list.scrollTop) {
+        list.scrollTop = itemTop;
+      } else if (itemBottom > list.scrollTop + list.clientHeight) {
+        list.scrollTop = itemBottom - list.clientHeight;
+      }
+    }
+  }, [selectedCategoryId]);
   return (
     <aside
       className="w-full lg:w-72 xl:w-80 flex-shrink-0 lg:sticky lg:top-[88px] z-20 self-start"
@@ -171,12 +189,14 @@ export default function MenuSidebar({
 
           {/* Categories List — Scrollable vertical list with custom scrollbar */}
           <div
-            className="space-y-1.5 overflow-y-auto custom-scrollbar pr-1 max-h-[380px]"
+            ref={listRef}
+            className="relative space-y-1.5 overflow-y-auto custom-scrollbar pr-1.5 max-h-[320px] sm:max-h-[350px] lg:max-h-[360px] xl:max-h-[380px]"
             role="tablist"
             aria-label="Filter menu by category"
           >
             {/* "All" Dishes Tab */}
             <button
+              ref={selectedCategoryId === 'all' ? activeItemRef : null}
               type="button"
               role="tab"
               aria-selected={selectedCategoryId === 'all'}
@@ -196,7 +216,7 @@ export default function MenuSidebar({
                 <span className="truncate">All Categories</span>
               </div>
               <span
-                className={`ml-2 px-2 py-0.2 rounded-full text-[10px] font-bold flex-shrink-0 ${
+                className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${
                   selectedCategoryId === 'all'
                     ? 'bg-accent text-primary'
                     : 'bg-secondary-dark text-muted'
@@ -212,6 +232,7 @@ export default function MenuSidebar({
               return (
                 <button
                   key={category.id}
+                  ref={isActive ? activeItemRef : null}
                   type="button"
                   role="tab"
                   aria-selected={isActive}
@@ -232,7 +253,7 @@ export default function MenuSidebar({
                   </div>
                   {category.itemCount > 0 && (
                     <span
-                      className={`ml-2 px-2 py-0.2 rounded-full text-[10px] font-bold flex-shrink-0 ${
+                      className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${
                         isActive
                           ? 'bg-accent text-primary'
                           : 'bg-secondary-dark text-muted'
