@@ -103,6 +103,11 @@ export default function AdminTablesPage() {
   const [tableToDeactivate, setTableToDeactivate] = useState(null);
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
 
+  // Confirmation Modal State for Deletion
+  const [tableToDelete, setTableToDelete] = useState(null);
+  const [isDeletingTable, setIsDeletingTable] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+
   // Form Fields
   const [formTableNumber, setFormTableNumber] = useState('');
   const [formTableName, setFormTableName] = useState('');
@@ -153,7 +158,9 @@ export default function AdminTablesPage() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        if (tableToDeactivate && !isTogglingStatus) {
+        if (tableToDelete && !isDeletingTable) {
+          handleCancelDeleteTable();
+        } else if (tableToDeactivate && !isTogglingStatus) {
           setTableToDeactivate(null);
         } else if (isModalOpen && !isSaving) {
           closeModal();
@@ -162,7 +169,7 @@ export default function AdminTablesPage() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isModalOpen, tableToDeactivate, isSaving, isTogglingStatus]);
+  }, [isModalOpen, tableToDeactivate, tableToDelete, isSaving, isTogglingStatus, isDeletingTable]);
 
   // Autofocus input when modal opens
   useEffect(() => {
@@ -420,6 +427,46 @@ export default function AdminTablesPage() {
   // Cancel deactivation dialog
   const handleCancelDeactivate = () => {
     setTableToDeactivate(null);
+  };
+
+  // Open Delete Confirmation Modal
+  const handleRequestDeleteTable = (table) => {
+    setTableToDelete(table);
+    setDeleteError(null);
+  };
+
+  // Cancel deletion dialog
+  const handleCancelDeleteTable = () => {
+    if (isDeletingTable) return;
+    setTableToDelete(null);
+    setDeleteError(null);
+  };
+
+  // Confirm deletion from dialog via API
+  const handleConfirmDeleteTable = async () => {
+    if (!tableToDelete || isDeletingTable) return;
+    const target = tableToDelete;
+    const targetId = target.id || target._id;
+
+    setIsDeletingTable(true);
+    setDeleteError(null);
+    try {
+      const result = await adminTableApi.deleteTable(targetId);
+
+      // Optimistically remove from state and refresh from database
+      setTables((prev) => prev.filter((tbl) => (tbl.id || tbl._id) !== targetId));
+      setFeedback({
+        type: 'success',
+        message: result?.message || `"${target.tableNumber}" deleted successfully.`,
+      });
+      setTableToDelete(null);
+      await loadTables();
+    } catch (err) {
+      console.error('[AdminTablesPage] Delete error:', err);
+      setDeleteError(err.message || `Failed to delete "${target.tableNumber}".`);
+    } finally {
+      setIsDeletingTable(false);
+    }
   };
 
   // Filter & Sort tables
@@ -919,7 +966,7 @@ export default function AdminTablesPage() {
                             {/* Activate / Deactivate Action */}
                             <button
                               type="button"
-                              disabled={isTogglingStatus}
+                              disabled={isTogglingStatus || isDeletingTable}
                               onClick={() => handleRequestToggleStatus(table)}
                               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition border cursor-pointer active:scale-95 disabled:opacity-50 ${
                                 isActive
@@ -935,22 +982,47 @@ export default function AdminTablesPage() {
                             {/* Edit Action */}
                             <button
                               type="button"
+                              disabled={isDeletingTable}
                               onClick={() => handleOpenEditModal(table)}
-                              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition cursor-pointer flex items-center gap-1.5 active:scale-95"
+                              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition cursor-pointer inline-flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
                               title={`Edit ${table.tableNumber}`}
                               aria-label={`Edit ${table.tableNumber}`}
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="w-3.5 h-3.5 text-slate-500"
+                                className="w-4 h-4 text-slate-600 shrink-0"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
                                 strokeWidth="2"
+                                aria-hidden="true"
                               >
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
                               <span>Edit</span>
+                            </button>
+
+                            {/* Delete Action */}
+                            <button
+                              type="button"
+                              disabled={isDeletingTable || isTogglingStatus}
+                              onClick={() => handleRequestDeleteTable(table)}
+                              className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 text-xs font-semibold border border-rose-200 transition cursor-pointer inline-flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
+                              title={`Delete ${table.tableNumber}`}
+                              aria-label={`Delete ${table.tableNumber}`}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-4 h-4 text-rose-600 shrink-0"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                aria-hidden="true"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                              <span>Delete</span>
                             </button>
                           </div>
                         </td>
@@ -1030,12 +1102,12 @@ export default function AdminTablesPage() {
                     </div>
 
                     {/* Action Buttons Row with touch-friendly min height */}
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
                       <button
                         type="button"
-                        disabled={isTogglingStatus}
+                        disabled={isTogglingStatus || isDeletingTable}
                         onClick={() => handleRequestToggleStatus(table)}
-                        className={`w-full min-h-[42px] py-2 rounded-xl text-xs font-semibold text-center transition border cursor-pointer active:scale-95 disabled:opacity-50 ${
+                        className={`w-full min-h-[42px] py-2 px-1 rounded-xl text-xs font-semibold text-center transition border cursor-pointer active:scale-95 disabled:opacity-50 truncate ${
                           isActive
                             ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'
                             : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
@@ -1047,21 +1119,44 @@ export default function AdminTablesPage() {
 
                       <button
                         type="button"
+                        disabled={isDeletingTable}
                         onClick={() => handleOpenEditModal(table)}
-                        className="w-full min-h-[42px] py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 text-center transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                        className="w-full min-h-[42px] py-2 px-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 text-center transition cursor-pointer inline-flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
                         aria-label={`Edit ${table.tableNumber}`}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="w-3.5 h-3.5 text-slate-500"
+                          className="w-4 h-4 text-slate-600 shrink-0"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
                           strokeWidth="2"
+                          aria-hidden="true"
                         >
                           <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                         <span>Edit</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={isDeletingTable || isTogglingStatus}
+                        onClick={() => handleRequestDeleteTable(table)}
+                        className="w-full min-h-[42px] py-2 px-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold border border-rose-200 text-center transition cursor-pointer inline-flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
+                        aria-label={`Delete ${table.tableNumber}`}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4 text-rose-600 shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          aria-hidden="true"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>Delete</span>
                       </button>
                     </div>
                   </div>
@@ -1167,6 +1262,162 @@ export default function AdminTablesPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                     </svg>
                     <span>Deactivate Table</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRMATION DIALOG: DELETE TABLE */}
+      {tableToDelete && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-delete-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeletingTable) handleCancelDeleteTable();
+          }}
+        >
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-fadeIn my-auto max-h-[92vh] overflow-y-auto">
+            {/* Danger Header */}
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-6 h-6 text-rose-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 id="modal-delete-title" className="text-base font-extrabold text-primary">
+                  Delete {tableToDelete.tableNumber}?
+                </h3>
+                <p className="text-xs text-muted">Permanent database table removal</p>
+              </div>
+            </div>
+
+            {/* Table Details Snapshot */}
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-extrabold text-primary text-sm">
+                  {tableToDelete.tableNumber}
+                </span>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                    tableToDelete.status === 'Active'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : 'bg-slate-100 text-slate-600 border-slate-200'
+                  }`}
+                >
+                  {tableToDelete.status}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-slate-500 text-[11px] pt-1">
+                <span>{tableToDelete.name || '(No custom name)'}</span>
+                <span>{tableToDelete.capacity} Guest Seats</span>
+              </div>
+            </div>
+
+            {/* Error Notification */}
+            {deleteError && (
+              <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs font-semibold text-rose-800 flex items-start gap-2.5 animate-fadeIn">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 text-rose-600 mt-0.5 flex-shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span className="leading-snug">{deleteError}</span>
+              </div>
+            )}
+
+            {/* Warning Explanation & Business Rules */}
+            <div className="space-y-2 text-xs text-slate-600 leading-relaxed">
+              <p>
+                Are you sure you want to permanently delete <strong>{tableToDelete.tableNumber}</strong> from the database? This action cannot be undone.
+              </p>
+              <p className="text-[11px] text-slate-500 bg-amber-50/70 p-2.5 rounded-xl border border-amber-200/60 text-amber-900 leading-normal">
+                ℹ️ <strong>Integrity Protection:</strong> Tables with active in-progress dining orders cannot be deleted. Completed historical orders, payments, and sales analytics will remain safely preserved in the database.
+              </p>
+            </div>
+
+            {/* Dialog Action Buttons */}
+            <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-slate-100">
+              <button
+                type="button"
+                disabled={isDeletingTable}
+                onClick={handleCancelDeleteTable}
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingTable}
+                onClick={handleConfirmDeleteTable}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs transition shadow-xs cursor-pointer flex items-center gap-2 disabled:opacity-50 active:scale-95"
+              >
+                {isDeletingTable ? (
+                  <>
+                    <svg
+                      className="animate-spin h-3.5 w-3.5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    <span>Delete Table</span>
                   </>
                 )}
               </button>

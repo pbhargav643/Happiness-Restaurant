@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Table, { getNormalizedTableKey } from '../models/Table.js';
+import Order from '../models/Order.js';
 
 // Baseline tables for offline or test environments
 const INITIAL_BASELINE_TABLES = [
@@ -509,12 +510,31 @@ export const tableService = {
         throw err;
       }
 
+      // 1. Check table occupancy and active order reference
       if (table.isOccupied || table.activeOrderId) {
-        const err = new Error('Cannot delete a dining table with an active in-progress order');
+        const err = new Error(`Cannot delete "${table.tableNumber}" because it currently has an active in-progress order.`);
         err.statusCode = 400;
         throw err;
       }
 
+      // 2. Query Order collection directly for any active dine-in orders associated with this table
+      const activeOrder = await Order.findOne({
+        $or: [
+          { tableId: table._id },
+          { tableNumber: table.tableNumber },
+        ],
+        status: { $in: ['PLACED', 'PREPARING', 'READY'] },
+      }).select('orderId status').lean();
+
+      if (activeOrder) {
+        const err = new Error(
+          `Cannot delete "${table.tableNumber}" because active order #${activeOrder.orderId} (${activeOrder.status}) is currently in progress. Complete or cancel all active orders before deleting.`
+        );
+        err.statusCode = 400;
+        throw err;
+      }
+
+      // 3. Delete the table record from MongoDB (Historical completed orders and payment records are preserved in Order collection)
       await Table.findByIdAndDelete(id);
       return { success: true, message: `Table "${table.tableNumber}" deleted successfully.` };
     }
@@ -528,7 +548,7 @@ export const tableService = {
 
     const table = inMemoryTables[tableIndex];
     if (table.isOccupied || table.activeOrderId) {
-      const err = new Error('Cannot delete a dining table with an active in-progress order');
+      const err = new Error(`Cannot delete "${table.tableNumber}" because it currently has an active in-progress order.`);
       err.statusCode = 400;
       throw err;
     }
