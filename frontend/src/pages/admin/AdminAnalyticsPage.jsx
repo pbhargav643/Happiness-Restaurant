@@ -497,18 +497,6 @@ export default function AdminAnalyticsPage() {
         </div>
       )}
 
-      {/* Legacy/Historical Unclassified Records Notice (if any exist) */}
-      {unknownOrders.length > 0 && (
-        <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 flex items-center justify-between">
-          <span>
-            <strong>Historical Integrity Note:</strong> {unknownOrders.length} legacy order record(s) without an identifiable order type have been safely quarantined to guarantee zero double-counting.
-          </span>
-          <span className="text-[10px] font-mono font-bold text-slate-500 uppercase px-2 py-0.5 rounded bg-white border border-slate-200">
-            Safe Mode
-          </span>
-        </div>
-      )}
-
       {/* ============================================================== */}
       {/* 2. PRIMARY SELECTABLE ANALYTICS SECTION TABS                  */}
       {/* ============================================================== */}
@@ -659,14 +647,26 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
+      {/* Legacy/Historical Unclassified Records Notice (if any exist, safely below top section) */}
+      {unknownOrders.length > 0 && (
+        <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 flex items-center justify-between">
+          <span>
+            <strong>Historical Integrity Note:</strong> {unknownOrders.length} legacy order record(s) without an identifiable order type have been safely quarantined to guarantee zero double-counting.
+          </span>
+          <span className="text-[10px] font-mono font-bold text-slate-500 uppercase px-2 py-0.5 rounded bg-white border border-slate-200">
+            Safe Mode
+          </span>
+        </div>
+      )}
+
       {/* ============================================================== */}
       {/* 4. EXECUTIVE KPI CARDS (6 Key Metrics)                        */}
       {/* ============================================================== */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4 items-stretch">
         {/* Metric 1: Total Orders */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[112px]">
-          <div className="flex items-center justify-between gap-1.5 mb-2">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
+        <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
+          <div className="flex items-start justify-between gap-1.5 mb-2">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider leading-tight break-words">
               {selectedSection === 'DINE_IN' ? 'Dine-In Orders' : 'Parcel Orders'}
             </span>
             <div className="w-7 h-7 shrink-0 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
@@ -676,7 +676,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
           <div className="flex items-center justify-between gap-1.5 mt-auto pt-1">
-            <span className="text-xl sm:text-2xl font-black text-slate-900 font-sans tracking-tight truncate">
+            <span className="text-xl sm:text-2xl font-black text-slate-900 font-sans tracking-tight">
               {stats.totalOrders}
             </span>
             <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
@@ -686,9 +686,9 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Metric 2: Total Sales */}
-        <div className="bg-white rounded-2xl border border-emerald-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[112px]">
-          <div className="flex items-center justify-between gap-1.5 mb-2">
-            <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider truncate">
+        <div className="bg-white rounded-2xl border border-emerald-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
+          <div className="flex items-start justify-between gap-1.5 mb-2">
+            <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider leading-tight break-words">
               {selectedSection === 'DINE_IN' ? 'Dine-In Sales' : 'Parcel Sales'}
             </span>
             <div className="w-7 h-7 shrink-0 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
@@ -696,7 +696,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
           <div className="flex items-center justify-between gap-1.5 mt-auto pt-1">
-            <span className="text-xl sm:text-2xl font-black text-emerald-900 font-sans tracking-tight truncate">
+            <span className="text-xl sm:text-2xl font-black text-emerald-900 font-sans tracking-tight">
               ₹{stats.totalSales}
             </span>
             <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
@@ -706,9 +706,9 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Metric 3: Placed (Pending) */}
-        <div className="bg-white rounded-2xl border border-sky-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[112px]">
-          <div className="flex items-center justify-between gap-1.5 mb-2">
-            <span className="text-[11px] font-bold text-sky-800 uppercase tracking-wider truncate">
+        <div className="bg-white rounded-2xl border border-sky-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
+          <div className="flex items-start justify-between gap-1.5 mb-2">
+            <span className="text-[11px] font-bold text-sky-800 uppercase tracking-wider leading-tight break-words">
               Placed Orders
             </span>
             <div className="w-7 h-7 shrink-0 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center">
@@ -718,7 +718,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
           <div className="flex items-center justify-between gap-1.5 mt-auto pt-1">
-            <span className="text-xl sm:text-2xl font-black text-sky-900 font-sans tracking-tight truncate">
+            <span className="text-xl sm:text-2xl font-black text-sky-900 font-sans tracking-tight">
               {stats.pending}
             </span>
             <span className="text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full shrink-0">
@@ -728,9 +728,9 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Metric 4: Preparing */}
-        <div className="bg-white rounded-2xl border border-amber-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[112px]">
-          <div className="flex items-center justify-between gap-1.5 mb-2">
-            <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider truncate">
+        <div className="bg-white rounded-2xl border border-amber-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
+          <div className="flex items-start justify-between gap-1.5 mb-2">
+            <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider leading-tight break-words">
               Preparing
             </span>
             <div className="w-7 h-7 shrink-0 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
@@ -740,7 +740,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
           <div className="flex items-center justify-between gap-1.5 mt-auto pt-1">
-            <span className="text-xl sm:text-2xl font-black text-amber-900 font-sans tracking-tight truncate">
+            <span className="text-xl sm:text-2xl font-black text-amber-900 font-sans tracking-tight">
               {stats.preparing}
             </span>
             <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">
@@ -750,9 +750,9 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Metric 5: Ready to Serve / Ready for Pickup */}
-        <div className="bg-white rounded-2xl border border-teal-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[112px]">
-          <div className="flex items-center justify-between gap-1.5 mb-2">
-            <span className="text-[11px] font-bold text-teal-800 uppercase tracking-wider truncate">
+        <div className="bg-white rounded-2xl border border-teal-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
+          <div className="flex items-start justify-between gap-1.5 mb-2">
+            <span className="text-[11px] font-bold text-teal-800 uppercase tracking-wider leading-tight break-words">
               {selectedSection === 'DINE_IN' ? 'Ready to Serve' : 'Ready for Pickup'}
             </span>
             <div className="w-7 h-7 shrink-0 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center">
@@ -762,7 +762,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
           <div className="flex items-center justify-between gap-1.5 mt-auto pt-1">
-            <span className="text-xl sm:text-2xl font-black text-teal-900 font-sans tracking-tight truncate">
+            <span className="text-xl sm:text-2xl font-black text-teal-900 font-sans tracking-tight">
               {stats.ready}
             </span>
             <span className="text-[10px] font-bold text-teal-700 bg-teal-100 px-2 py-0.5 rounded-full shrink-0">
@@ -772,9 +772,9 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Metric 6: Served / Picked Up (Completed) */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[112px]">
-          <div className="flex items-center justify-between gap-1.5 mb-2">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider truncate">
+        <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
+          <div className="flex items-start justify-between gap-1.5 mb-2">
+            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider leading-tight break-words">
               {selectedSection === 'DINE_IN' ? 'Served' : 'Picked Up'}
             </span>
             <div className="w-7 h-7 shrink-0 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
@@ -782,7 +782,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
           <div className="flex items-center justify-between gap-1.5 mt-auto pt-1">
-            <span className="text-xl sm:text-2xl font-black text-slate-800 font-sans tracking-tight truncate">
+            <span className="text-xl sm:text-2xl font-black text-slate-800 font-sans tracking-tight">
               {stats.completed}
             </span>
             <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
@@ -797,8 +797,8 @@ export default function AdminAnalyticsPage() {
       {/* ============================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Hourly Chart (7 cols) */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
-          <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 flex-wrap gap-2">
+        <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col space-y-4">
+          <div className="flex items-start sm:items-center justify-between pb-3.5 border-b border-slate-100 gap-3">
             <div>
               <h2 className="text-base font-extrabold text-slate-900">
                 {selectedSection === 'DINE_IN' ? 'Hourly Dine-in Order Activity' : 'Hourly Parcel Pickup Activity'}
@@ -808,8 +808,8 @@ export default function AdminAnalyticsPage() {
               </p>
             </div>
             {peakHour && (
-              <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200">
-                Peak: {peakHour.label} ({peakHour.orders} orders)
+              <span className="shrink-0 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200 whitespace-nowrap shadow-2xs">
+                Peak: {peakHour.label} ({peakHour.orders} {peakHour.orders === 1 ? 'order' : 'orders'})
               </span>
             )}
           </div>
@@ -819,7 +819,7 @@ export default function AdminAnalyticsPage() {
               No orders registered in this time window.
             </div>
           ) : (
-            <div className="space-y-2.5 my-auto">
+            <div className="space-y-2.5">
               {hourlyData
                 .filter((h) => h.orders > 0 || (h.hour >= 11 && h.hour <= 22))
                 .map((slot) => {
@@ -858,7 +858,7 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Status Distribution (5 cols) */}
-        <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-4">
+        <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col space-y-4">
           <div className="pb-3.5 border-b border-slate-100">
             <h2 className="text-base font-extrabold text-slate-900">
               {selectedSection === 'DINE_IN' ? 'Dine-in Status Distribution' : 'Pickup Status Distribution'}
@@ -869,7 +869,7 @@ export default function AdminAnalyticsPage() {
           {!statusDistribution ? (
             <div className="py-12 text-center text-slate-400 text-xs font-medium">No data available</div>
           ) : (
-            <div className="space-y-4 my-auto">
+            <div className="space-y-4">
               {/* Stacked Proportional Bar */}
               <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden flex shadow-inner">
                 {statusDistribution.map(
@@ -888,7 +888,7 @@ export default function AdminAnalyticsPage() {
               {/* Status List with Micro-Bars */}
               <div className="space-y-2.5 pt-1">
                 {statusDistribution.map((item) => (
-                  <div key={item.label} className="p-2.5 rounded-xl bg-slate-50/70 border border-slate-100 space-y-1.5">
+                  <div key={item.label} className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 space-y-2">
                     <div className="flex justify-between items-center text-xs">
                       <div className="flex items-center gap-2">
                         <span className={`w-2.5 h-2.5 rounded-full ${item.color}`} />
