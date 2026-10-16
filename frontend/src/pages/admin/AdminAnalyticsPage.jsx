@@ -662,7 +662,7 @@ export default function AdminAnalyticsPage() {
       {/* ============================================================== */}
       {/* 4. EXECUTIVE KPI CARDS (6 Key Metrics)                        */}
       {/* ============================================================== */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4 items-stretch">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 sm:gap-4 items-stretch">
         {/* Metric 1: Total Orders */}
         <div className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between h-full min-h-[118px] sm:min-h-[122px]">
           <div className="flex items-start justify-between gap-1.5 mb-2">
