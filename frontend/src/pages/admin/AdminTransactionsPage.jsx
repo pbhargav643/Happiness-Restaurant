@@ -920,7 +920,7 @@ export default function AdminTransactionsPage() {
       {/* ============================================================== */}
       {/* 2. EXECUTIVE PAYMENT SUMMARY CARDS (Phase 3)                   */}
       {/* ============================================================== */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4 items-stretch">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 sm:gap-4 items-stretch">
         {/* Card 1: Total Cash Collected */}
         <div className="bg-white rounded-2xl border border-emerald-200 p-3.5 sm:p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-1.5 mb-2">
