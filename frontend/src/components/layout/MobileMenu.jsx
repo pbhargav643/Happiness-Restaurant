@@ -28,7 +28,11 @@ export default function MobileMenu({ isOpen, onClose }) {
   const { customer, isAuthenticated, logout } = useCustomerAuth();
   const { settings } = useSettings();
 
-  const restaurantName = settings?.restaurantName || RESTAURANT_CONFIG.name;
+  const rawName = settings?.restaurantName || RESTAURANT_CONFIG.name;
+  const restaurantName =
+    rawName === 'VYANJAN RESTAURANT' || rawName === 'HAPPINESS RESTAURANT'
+      ? RESTAURANT_CONFIG.name
+      : rawName;
   const operatingTime =
     settings?.openingTime && settings?.closingTime
       ? `${settings.openingTime} – ${settings.closingTime}`

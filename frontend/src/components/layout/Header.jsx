@@ -22,10 +22,10 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-surface-border shadow-xs transition-all duration-200">
-        <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-3 sm:px-6 xl:px-6 2xl:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-3 2xl:gap-4">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-surface-border shadow-xs transition-all duration-200 pt-[env(safe-area-inset-top,0px)]">
+        <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-3 sm:px-6 xl:px-6 2xl:px-8 min-h-[4rem] sm:min-h-[5rem] py-1.5 sm:py-2 flex items-center justify-between gap-2 sm:gap-3 2xl:gap-4">
           {/* Left: Restaurant Branding */}
-          <div className="flex-shrink-0 min-w-0">
+          <div className="min-w-0 flex-1 sm:flex-initial">
             <Brand />
           </div>
 

@@ -45,19 +45,22 @@ export default function Brand({ compact = false }) {
       </div>
 
       {/* Brand Name & Pickup Notice */}
-      <div className="flex flex-col min-w-0 justify-center">
-        <div className="flex items-center min-w-0">
-          <span className="font-extrabold text-[11px] xs:text-xs sm:text-base 2xl:text-lg tracking-tight text-primary leading-tight uppercase font-sans whitespace-normal sm:whitespace-nowrap">
-            {brandWords.map((word, idx) => (
-              <span key={idx} className="block sm:inline">
-                {word}{idx < brandWords.length - 1 ? ' ' : ''}
-              </span>
-            ))}
+      <div className="flex flex-col min-w-0 justify-center py-0.5">
+        <div className="min-w-0">
+          <span className="font-extrabold text-[11px] xs:text-xs sm:text-sm md:text-base 2xl:text-lg tracking-tight text-primary leading-snug uppercase font-sans block sm:whitespace-nowrap">
+            {brandWords.length >= 3 ? (
+              <>
+                <span className="whitespace-nowrap">{brandWords.slice(0, -1).join(' ')}</span>{' '}
+                <span className="whitespace-nowrap">{brandWords.slice(-1).join(' ')}</span>
+              </>
+            ) : (
+              <span className="whitespace-nowrap">{restaurantName}</span>
+            )}
           </span>
         </div>
 
         {!compact && (
-          <div className="flex items-center gap-1 mt-0.5 min-w-0">
+          <div className="flex items-center gap-1 mt-0.5 sm:mt-1 min-w-0">
             <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] 2xl:text-[11px] font-semibold bg-amber-50 text-amber-900 border border-amber-300 tracking-wide whitespace-nowrap">
               <span className="w-1.5 h-1.5 rounded-full bg-accent mr-1 animate-pulse" />
               {RESTAURANT_CONFIG.pickupBadge}
