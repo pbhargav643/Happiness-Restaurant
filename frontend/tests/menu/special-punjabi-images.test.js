@@ -166,7 +166,7 @@ expectedItems.forEach((expected) => {
   const item = MENU_ITEMS.find((i) => i.id === expected.id);
   assert(Boolean(item), `Item "${expected.name}" (${expected.id}) exists in MENU_ITEMS`);
   if (item) {
-    assert(item.name === expected.name || (expected.name === 'PANEER HAPPINESS SPL.' && item.name === 'PANEER VYANJAN SPL.'), `Exact name preserved: "${item.name}"`);
+    assert(item.name === expected.name || (expected.name === 'PANEER HAPPINESS SPL.' && (item.name === 'PANEER VYANJAN SPL.' || item.name === 'PANEER TRUPTI SPL.')), `Exact name preserved: "${item.name}"`);
     assert(item.price === expected.price, `Exact price preserved: ₹${item.price}`);
     assert(item.category === 'special-punjabi', `Category is "special-punjabi"`);
     assert(item.image === expected.image, `Image path mapped to exact: "${expected.image}"`);

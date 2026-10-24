@@ -13,7 +13,7 @@ const BOLD = '\x1b[1m';
 const RESET = '\x1b[0m';
 
 console.log(`${BOLD}${YELLOW}================================================================${RESET}`);
-console.log(`${BOLD}${YELLOW}  HAPPINESS RESTAURANT - STARTING FULL-STACK ENVIRONMENT${RESET}`);
+console.log(`${BOLD}${YELLOW}  TRUPTI SNACKS RESTAURANT - STARTING FULL-STACK ENVIRONMENT${RESET}`);
 console.log(`${BOLD}${YELLOW}================================================================${RESET}`);
 console.log(`  ${CYAN}[BACKEND]${RESET}  Node.js API  -> http://localhost:5000`);
 console.log(`  ${GREEN}[FRONTEND]${RESET} React App    -> http://localhost:3000`);

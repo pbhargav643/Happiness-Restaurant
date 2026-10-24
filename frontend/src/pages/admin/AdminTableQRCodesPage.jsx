@@ -85,7 +85,7 @@ function TableQRCanvas({ text, size = 160, className = '' }) {
  * - Functional QR code generation for each existing table using pure JS engine
  * - Unique QR payload linking to dine-in menu destination with public table identifiers
  * - Preview QR modal with high-res QR display, table metadata, and quick actions
- * - Download QR as PNG with clean naming ('vyanjan-restaurant-table-1-qr.png')
+ * - Download QR as PNG with clean naming ('trupti-snacks-restaurant-table-1-qr.png')
  * - Print QR layout with restaurant branding, table details, and menu scan instruction
  * - Clean print isolation hiding admin chrome via '@media print'
  * - Responsive layout tested on desktop, laptop, tablet, and mobile
@@ -199,7 +199,7 @@ export default function AdminTableQRCodesPage() {
     try {
       const payloadUrl = generateTableDineInUrl(table, customBaseUrl);
       const cleanNum = (table.tableNumber || '').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase().replace(/-+/g, '-').replace(/^-|-$/g, '') || 'table';
-      const filename = `vyanjan-restaurant-${cleanNum}-qr.png`;
+      const filename = `trupti-snacks-restaurant-${cleanNum}-qr.png`;
 
       downloadQRCodePNG(payloadUrl, filename, {
         pixelSize: 12,

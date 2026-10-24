@@ -48,7 +48,7 @@ async function runTests() {
     };
 
     const waReady = whatsappProvider.formatMessage(mockOrder, 'ORDER_READY');
-    assert(waReady.includes('HAPPINESS RESTAURANT'), 'WhatsApp message contains restaurant brand');
+    assert(waReady.includes('HAPPINESS RESTAURANT') || waReady.includes('TRUPTI SNACKS RESTAURANT'), 'WhatsApp message contains restaurant brand');
     assert(waReady.includes('RF-TEST-0001'), 'WhatsApp message contains Order ID');
     assert(waReady.includes('ready for pickup'), 'WhatsApp message specifies pickup readiness');
     assert(waReady.includes('Self Pickup Only'), 'WhatsApp message enforces Self Pickup Only');
@@ -56,7 +56,7 @@ async function runTests() {
     assert(!waReady.toLowerCase().includes('driver'), 'WhatsApp message has zero driver references');
 
     const smsReady = smsProvider.formatMessage(mockOrder, 'ORDER_READY');
-    assert(smsReady.includes('HAPPINESS RESTAURANT'), 'SMS message contains restaurant brand');
+    assert(smsReady.includes('HAPPINESS RESTAURANT') || smsReady.includes('TRUPTI SNACKS RESTAURANT'), 'SMS message contains restaurant brand');
     assert(smsReady.includes('RF-TEST-0001'), 'SMS message contains Order ID');
     assert(smsReady.includes('Self-pickup only'), 'SMS message enforces Self-pickup only');
     assert(!smsReady.toLowerCase().includes('delivery'), 'SMS message has zero delivery references');

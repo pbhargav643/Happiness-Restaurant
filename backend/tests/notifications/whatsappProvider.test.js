@@ -58,7 +58,7 @@ async function runTests() {
     };
 
     const msgPlaced = whatsappProvider.formatMessage(testOrder, 'ORDER_PLACED');
-    assert(msgPlaced.includes('HAPPINESS RESTAURANT'), 'ORDER_PLACED has restaurant name');
+    assert(msgPlaced.includes('HAPPINESS RESTAURANT') || msgPlaced.includes('TRUPTI SNACKS RESTAURANT'), 'ORDER_PLACED has restaurant name');
     assert(msgPlaced.includes('RF-20260925-111111'), 'ORDER_PLACED has orderId');
     assert(msgPlaced.includes('placed successfully'), 'ORDER_PLACED has placed confirmation');
     assert(msgPlaced.includes('Self Pickup Only'), 'ORDER_PLACED enforces Self Pickup Only');

@@ -1,7 +1,7 @@
 {
   "name": "happiness-restaurant-project",
   "version": "1.0.0",
-  "description": "HAPPINESS RESTAURANT - Takeaway Ordering Platform (Full-Stack)",
+  "description": "TRUPTI SNACKS RESTAURANT - Takeaway Ordering Platform (Full-Stack)",
   "type": "module",
   "scripts": {
     "dev": "node start-dev.js",

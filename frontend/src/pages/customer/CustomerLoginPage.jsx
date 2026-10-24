@@ -6,7 +6,7 @@ import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig';
 /**
  * CustomerLoginPage Component
  *
- * Dedicated customer login portal for Vyanjan Restaurant.
+ * Dedicated customer login portal for Trupti Snacks Restaurant.
  *
  * Features:
  * - Login using 10-digit Indian mobile number OR email address

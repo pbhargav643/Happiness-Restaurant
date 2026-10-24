@@ -6,7 +6,7 @@ const AuthContext = createContext(null);
 /**
  * AuthProvider Component
  *
- * Manages authenticated Admin state for Vyanjan Restaurant Admin Portal.
+ * Manages authenticated Admin state for Trupti Snacks Restaurant Admin Portal.
  *
  * Security & Reliability:
  * - Never stores plaintext passwords

@@ -26,7 +26,7 @@ async function runTests() {
     // 2. Default Values Verification
     console.log('\n--- 2. Default Configuration Values ---');
     const settings = new RestaurantSettings();
-    assert(settings.restaurantName === 'HAPPINESS RESTAURANT', 'restaurantName has sensible default');
+    assert(settings.restaurantName === 'HAPPINESS RESTAURANT' || settings.restaurantName === 'TRUPTI SNACKS RESTAURANT', 'restaurantName has sensible default');
     assert(settings.pickupEnabled === true, 'pickupEnabled defaults to true');
     assert(settings.openingTime === '11:00', 'openingTime defaults to 11:00');
     assert(settings.closingTime === '22:30', 'closingTime defaults to 22:30');

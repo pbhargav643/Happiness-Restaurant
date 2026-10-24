@@ -6,10 +6,10 @@ import { useSettings } from '../../context/SettingsContext.jsx';
 import contactApi from '../../services/contactApi.js';
 
 /**
- * Verified Location Configuration for VYANJAN RESTAURANT
+ * Verified Location Configuration for TRUPTI SNACKS RESTAURANT
  */
 const RESTAURANT_LOCATION = {
-  name: 'VYANJAN RESTAURANT',
+  name: 'TRUPTI SNACKS RESTAURANT',
   addressLine1: 'QX8M+J67, Navjivan Colony,',
   addressLine2: 'Bilimora, Gujarat 396325, India',
   fullAddress: 'QX8M+J67, Navjivan Colony, Bilimora, Gujarat 396325, India',
@@ -28,7 +28,7 @@ const RESTAURANT_LOCATION = {
 
 /**
  * ContactPage Component
- * Official Contact Page for VYANJAN RESTAURANT
+ * Official Contact Page for TRUPTI SNACKS RESTAURANT
  *
  * Requirements:
  * - Contact Hero: Title & Subtitle matching prompt verbatim
@@ -214,7 +214,7 @@ export default function ContactPage() {
               id="contact-hero-title"
               className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight leading-tight"
             >
-              Contact VYANJAN RESTAURANT
+              Contact TRUPTI SNACKS RESTAURANT
             </h1>
 
             <p className="text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
@@ -652,7 +652,7 @@ export default function ContactPage() {
                 {/* Map/Location Preview (Responsive iframe embed without API key) */}
                 <div className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-2xl overflow-hidden border border-surface-border bg-secondary relative shadow-inner">
                   <iframe
-                    title="VYANJAN RESTAURANT Location Map"
+                    title="TRUPTI SNACKS RESTAURANT Location Map"
                     src={RESTAURANT_LOCATION.embedUrl}
                     className="w-full h-full border-0"
                     loading="lazy"

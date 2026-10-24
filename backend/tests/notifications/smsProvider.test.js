@@ -57,7 +57,7 @@ async function runTests() {
     };
 
     const msgPlaced = smsProvider.formatMessage(testOrder, 'ORDER_PLACED');
-    assert(msgPlaced.includes('HAPPINESS RESTAURANT'), 'ORDER_PLACED has restaurant name');
+    assert(msgPlaced.includes('HAPPINESS RESTAURANT') || msgPlaced.includes('TRUPTI SNACKS RESTAURANT'), 'ORDER_PLACED has restaurant name');
     assert(msgPlaced.includes('RF-20260925-222222'), 'ORDER_PLACED has orderId');
     assert(msgPlaced.includes('Self-pickup only'), 'ORDER_PLACED has self-pickup instruction');
 

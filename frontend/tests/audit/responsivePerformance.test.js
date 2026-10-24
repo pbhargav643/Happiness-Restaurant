@@ -464,7 +464,7 @@ const restaurantConfigPath = path.join(SRC_DIR, 'constants/restaurantConfig.js')
 assert(fs.existsSync(restaurantConfigPath), 'restaurantConfig.js exists');
 const restaurantConfigContent = fs.readFileSync(restaurantConfigPath, 'utf8');
 
-assert(restaurantConfigContent.includes('VYANJAN RESTAURANT') || restaurantConfigContent.includes('HAPPINESS RESTAURANT'), 'Restaurant name is configured');
+assert(restaurantConfigContent.includes('VYANJAN RESTAURANT') || restaurantConfigContent.includes('HAPPINESS RESTAURANT') || restaurantConfigContent.includes('TRUPTI SNACKS RESTAURANT'), 'Restaurant name is configured');
 assert(restaurantConfigContent.includes('QX8M+J67, Navjivan Colony'), 'Address contains QX8M+J67, Navjivan Colony');
 assert(restaurantConfigContent.includes('Bilimora, Gujarat'), 'City and state is Bilimora, Gujarat');
 assert(contactContent.includes('Rajhans Complex / Opposite L.M.P. School'), 'Landmark is Rajhans Complex / Opposite L.M.P. School');

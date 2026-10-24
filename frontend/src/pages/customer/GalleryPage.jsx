@@ -12,14 +12,14 @@ const GALLERY_ITEMS = [
   // 1. Signature Dishes
   {
     id: 'gal-sig-1',
-    title: 'Paneer Vyanjan Special',
+    title: 'Paneer Trupti Special',
     category: 'Signature Dishes',
     image: '/images/menu/paneer-happiness-spl.jpg',
     description: 'Chef special rich cashew gravy topped with stuffed paneer parcels.',
   },
   {
     id: 'gal-sig-2',
-    title: 'Veg Vyanjan Special',
+    title: 'Veg Trupti Special',
     category: 'Signature Dishes',
     image: '/images/menu/veg_happiness_spl.jpg',
     description: 'House specialty medley of fresh vegetables simmered in aromatic gravy.',
@@ -102,7 +102,7 @@ const GALLERY_ITEMS = [
   // 4. Pizza
   {
     id: 'gal-piz-1',
-    title: 'Vyanjan Special Pizza',
+    title: 'Trupti Special Pizza',
     category: 'Pizza',
     image: '/images/menu/hapinezz-sp-pizza.jpg',
     description: 'Loaded with mixed vegetable toppings, melted mozzarella, and house herbs.',
@@ -264,7 +264,7 @@ const CATEGORIES = [
 
 /**
  * GalleryPage Component
- * Official Restaurant Food Gallery for VYANJAN RESTAURANT
+ * Official Restaurant Food Gallery for TRUPTI SNACKS RESTAURANT
  *
  * Requirements:
  * - Uses ONLY existing valid images from frontend/public/images/
@@ -330,7 +330,7 @@ export default function GalleryPage() {
               id="gallery-hero-title"
               className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight leading-tight"
             >
-              VYANJAN RESTAURANT Food Gallery
+              TRUPTI SNACKS RESTAURANT Food Gallery
             </h1>
 
             <p className="text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
@@ -512,7 +512,7 @@ export default function GalleryPage() {
 
               <div className="p-3 rounded-xl bg-secondary border border-surface-border text-xs text-muted flex items-center justify-between">
                 <span>Direct Counter Parcel Pickup</span>
-                <span className="font-bold text-primary">Vyanjan Restaurant</span>
+                <span className="font-bold text-primary">Trupti Snacks Restaurant</span>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2">

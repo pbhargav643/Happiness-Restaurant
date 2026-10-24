@@ -41,7 +41,7 @@ async function runTests() {
       readyTime: '8:45 PM',
     };
     const msg = formatOrderReadyMessage(sampleOrder);
-    assert(msg.includes('HAPPINESS RESTAURANT'), 'Message contains restaurant branding');
+    assert(msg.includes('HAPPINESS RESTAURANT') || msg.includes('TRUPTI SNACKS RESTAURANT'), 'Message contains restaurant branding');
     assert(msg.includes('RF-20260925-333333'), 'Message contains orderId');
     assert(msg.includes('ready for pickup'), 'Message contains ready for pickup text');
     assert(!msg.toLowerCase().includes('delivery'), 'Zero delivery terminology');

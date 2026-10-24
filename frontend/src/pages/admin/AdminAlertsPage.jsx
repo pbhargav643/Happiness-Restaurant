@@ -41,11 +41,11 @@ export function calculateNotificationDefaultYear(targetDate = new Date()) {
 /**
  * FilterDropdown Component
  *
- * Premium branded dropdown filter for Vyanjan Restaurant.
+ * Premium branded dropdown filter for Trupti Snacks Restaurant.
  * Replaces generic browser-select appearance with:
  * - Pill/rounded shape with refined neutral border & subtle depth
  * - Clean white background with smooth hover lift (1.5px) and gold transition
- * - VYANJAN gold accent (#D4AF37) on focus, open, active selection, and check indicators
+ * - TRUPTI gold accent (#D4AF37) on focus, open, active selection, and check indicators
  * - Smooth 180° chevron rotation (with prefers-reduced-motion guard)
  * - Accessible keyboard navigation (Space, Enter, Escape, Arrow Up/Down)
  * - Click-outside dismissal

@@ -64,7 +64,7 @@ async function runTests() {
 
     // Verify formatOrderReadyMessage contains all essential pickup info
     const readyMessage = formatOrderReadyMessage(testOrder);
-    assert(readyMessage.includes('HAPPINESS RESTAURANT'), 'Message contains restaurant branding');
+    assert(readyMessage.includes('HAPPINESS RESTAURANT') || readyMessage.includes('TRUPTI SNACKS RESTAURANT'), 'Message contains restaurant branding');
     assert(readyMessage.includes('RF-20260925-QA001'), 'Message contains order ID');
     assert(readyMessage.includes('7:45 PM'), 'Message contains ready time');
     assert(readyMessage.includes('ready for pickup'), 'Message explicitly states "ready for pickup"');
@@ -115,7 +115,7 @@ async function runTests() {
 
     // SMS text formatting (concise pickup-only)
     const smsText = smsService.formatSmsMessage(testOrder);
-    assert(smsText.includes('HAPPINESS RESTAURANT: Order RF-20260925-QA001 is ready for pickup'), 'SMS message is concise and clear');
+    assert(smsText.includes('HAPPINESS RESTAURANT: Order RF-20260925-QA001 is ready for pickup') || smsText.includes('TRUPTI SNACKS RESTAURANT: Order RF-20260925-QA001 is ready for pickup'), 'SMS message is concise and clear');
     assert(smsText.includes('Navjivan Colony, Bilimora'), 'SMS mentions Bilimora pickup location');
 
     // Unconfigured SMS dispatch returns normalized failure

@@ -6,10 +6,10 @@ import { PICKUP_CONFIG } from '../config/pickupConfig.js';
  * Fallback Default Settings
  */
 export const DEFAULT_FRONTEND_SETTINGS = {
-  restaurantName: RESTAURANT_CONFIG.name || 'VYANJAN RESTAURANT',
+  restaurantName: RESTAURANT_CONFIG.name || 'TRUPTI SNACKS RESTAURANT',
   tagline: RESTAURANT_CONFIG.tagline || 'Authentic Delicacies • Online Parcel Pickup',
   phone: RESTAURANT_CONFIG.contact?.phone || '+91 81558 16509',
-  email: RESTAURANT_CONFIG.contact?.email || 'contact@vyanjanrestaurant.com',
+  email: RESTAURANT_CONFIG.contact?.email || 'contact@truptisnacks.com',
   address: RESTAURANT_CONFIG.contact?.address || 'QX8M+J67, Navjivan Colony, Bilimora, Gujarat 396325, India',
   landmark: RESTAURANT_CONFIG.contact?.landmark || 'Rajhans Complex / Opposite L.M.P. School, College Road / Chikhli Road, Bilimora',
   operatingDays: RESTAURANT_CONFIG.operatingHours?.days || 'Monday – Sunday (All Days)',

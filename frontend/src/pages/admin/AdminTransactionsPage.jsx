@@ -512,7 +512,7 @@ export default function AdminTransactionsPage() {
       const link = document.createElement('a');
       const dateTag = new Date().toISOString().split('T')[0];
       link.href = url;
-      link.setAttribute('download', `vyanjan_transactions_report_${dateTag}.csv`);
+      link.setAttribute('download', `trupti_transactions_report_${dateTag}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

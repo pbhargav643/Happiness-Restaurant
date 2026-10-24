@@ -13,7 +13,7 @@ const restaurantSettingsSchema = new mongoose.Schema(
     restaurantName: {
       type: String,
       trim: true,
-      default: 'HAPPINESS RESTAURANT',
+      default: 'TRUPTI SNACKS RESTAURANT',
     },
     tagline: {
       type: String,
@@ -28,7 +28,7 @@ const restaurantSettingsSchema = new mongoose.Schema(
     email: {
       type: String,
       trim: true,
-      default: 'contact@happinessrestaurant.com',
+      default: 'contact@truptisnacks.com',
     },
     address: {
       type: String,

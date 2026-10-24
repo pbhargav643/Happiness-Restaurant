@@ -1,7 +1,7 @@
 @echo off
-title HAPPINESS RESTAURANT - Full Stack Launcher
+title TRUPTI SNACKS RESTAURANT - Full Stack Launcher
 echo ================================================================
-echo   HAPPINESS RESTAURANT - STARTING BOTH BACKEND AND FRONTEND
+echo   TRUPTI SNACKS RESTAURANT - STARTING BOTH BACKEND AND FRONTEND
 echo ================================================================
 echo.
 cd /d "%~dp0"

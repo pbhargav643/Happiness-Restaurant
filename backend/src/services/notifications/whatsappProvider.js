@@ -81,14 +81,14 @@ export const whatsappProvider = {
 
     switch (event) {
       case 'ORDER_PLACED':
-        return `HAPPINESS RESTAURANT\n\nHello ${customerName}, your pickup order ${orderId} has been placed successfully!\n\nPickup Date: ${pickupDate}\nPickup Time: ${pickupTime}${subtotal ? `\nTotal Amount: ${subtotal}` : ''}\n\nWe will notify you when your food is being prepared.\n\nSelf Pickup Only. Thank you!`;
+        return `TRUPTI SNACKS RESTAURANT\n\nHello ${customerName}, your pickup order ${orderId} has been placed successfully!\n\nPickup Date: ${pickupDate}\nPickup Time: ${pickupTime}${subtotal ? `\nTotal Amount: ${subtotal}` : ''}\n\nWe will notify you when your food is being prepared.\n\nSelf Pickup Only. Thank you!`;
 
       case 'ORDER_PREPARING':
-        return `HAPPINESS RESTAURANT\n\nHello ${customerName}, your order ${orderId} is now being freshly prepared by our chefs!\n\nScheduled Pickup: ${pickupTime}\n\nWe will notify you as soon as your parcel is ready for collection.\n\nSelf Pickup Only.`;
+        return `TRUPTI SNACKS RESTAURANT\n\nHello ${customerName}, your order ${orderId} is now being freshly prepared by our chefs!\n\nScheduled Pickup: ${pickupTime}\n\nWe will notify you as soon as your parcel is ready for collection.\n\nSelf Pickup Only.`;
 
       case 'ORDER_READY':
       default:
-        return `HAPPINESS RESTAURANT\n\nYour order ${orderId} is ready for pickup.\n\nPickup Time:\n${readyTime}\n\nPlease collect your parcel from our restaurant counter.\n\nSelf Pickup Only.`;
+        return `TRUPTI SNACKS RESTAURANT\n\nYour order ${orderId} is ready for pickup.\n\nPickup Time:\n${readyTime}\n\nPlease collect your parcel from our restaurant counter.\n\nSelf Pickup Only.`;
     }
   },
 

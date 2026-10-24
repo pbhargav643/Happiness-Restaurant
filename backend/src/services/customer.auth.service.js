@@ -312,7 +312,7 @@ export const customerAuthService = {
           try {
             await smsProvider.sendSms({
               to: customer.mobile,
-              message: `HAPPINESS RESTAURANT: Your password reset verification code is ${resetToken.slice(0, 6).toUpperCase()}. Valid for 15 minutes.`,
+              message: `TRUPTI SNACKS RESTAURANT: Your password reset verification code is ${resetToken.slice(0, 6).toUpperCase()}. Valid for 15 minutes.`,
             });
           } catch {
             // Silently handle provider error without leaking failure details

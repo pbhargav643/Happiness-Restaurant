@@ -6,7 +6,7 @@ import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig';
 /**
  * ForgotPasswordPage Component
  *
- * Dedicated customer password recovery portal for Vyanjan Restaurant.
+ * Dedicated customer password recovery portal for Trupti Snacks Restaurant.
  *
  * Requirements:
  * - Title: "Forgot Password?"

@@ -78,14 +78,14 @@ export const smsProvider = {
 
     switch (event) {
       case 'ORDER_PLACED':
-        return `HAPPINESS RESTAURANT: Order ${orderId} placed successfully. Scheduled Pickup: ${pickupTime}. Self-pickup only.`;
+        return `TRUPTI SNACKS RESTAURANT: Order ${orderId} placed successfully. Scheduled Pickup: ${pickupTime}. Self-pickup only.`;
 
       case 'ORDER_PREPARING':
-        return `HAPPINESS RESTAURANT: Order ${orderId} is now being prepared. We will notify you when it's ready. Self-pickup only.`;
+        return `TRUPTI SNACKS RESTAURANT: Order ${orderId} is now being prepared. We will notify you when it's ready. Self-pickup only.`;
 
       case 'ORDER_READY':
       default:
-        return `HAPPINESS RESTAURANT: Order ${orderId} is ready for pickup! Ready Time: ${readyTime}. Collect parcel from Navjivan Colony, Bilimora. Self-pickup only.`;
+        return `TRUPTI SNACKS RESTAURANT: Order ${orderId} is ready for pickup! Ready Time: ${readyTime}. Collect parcel from Navjivan Colony, Bilimora. Self-pickup only.`;
     }
   },
 

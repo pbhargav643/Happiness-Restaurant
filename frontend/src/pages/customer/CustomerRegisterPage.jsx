@@ -9,7 +9,7 @@ const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
 /**
  * CustomerRegisterPage Component
  *
- * Dedicated customer account creation portal for Vyanjan Restaurant.
+ * Dedicated customer account creation portal for Trupti Snacks Restaurant.
  *
  * Features:
  * - Full client-side validation (name length, 10-digit mobile, optional email, matching passwords)

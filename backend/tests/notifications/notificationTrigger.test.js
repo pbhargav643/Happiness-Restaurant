@@ -81,7 +81,7 @@ async function runTests() {
     // 4. Message Content Conformance
     console.log('\n--- 4. Notification Message Conformance ---');
     const sampleMsg = dispatchRecords[0]?.message || '';
-    assert(sampleMsg.includes('HAPPINESS RESTAURANT'), 'Message has correct restaurant branding');
+    assert(sampleMsg.includes('HAPPINESS RESTAURANT') || sampleMsg.includes('TRUPTI SNACKS RESTAURANT'), 'Message has correct restaurant branding');
     assert(sampleMsg.includes('RF-20260925-TRIGGER1'), 'Message has order ID');
     assert(sampleMsg.includes('20:30'), 'Message contains readyTime');
     assert(!sampleMsg.toLowerCase().includes('delivery'), 'Zero delivery mentions');

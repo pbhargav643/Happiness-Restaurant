@@ -2,28 +2,28 @@
  * Restaurant Central Configuration
  *
  * OFFICIAL RESTAURANT NAME:
- * VYANJAN RESTAURANT
+ * TRUPTI SNACKS RESTAURANT
  *
  * Central configuration providing consistent branding, contact,
  * operating hours, and pickup guidelines across the entire application.
  */
 export const RESTAURANT_CONFIG = {
-  name: 'VYANJAN RESTAURANT',
+  name: 'TRUPTI SNACKS RESTAURANT',
   tagline: 'Authentic Delicacies • Online Parcel Pickup',
   pickupBadge: 'Parcel Pickup Only',
   shortDescription:
-    'Order fresh, authentic food online from Vyanjan Restaurant and collect your parcel directly from the restaurant counter. Fresh, hot, and ready on time.',
+    'Order fresh, authentic food online from Trupti Snacks Restaurant and collect your parcel directly from the restaurant counter. Fresh, hot, and ready on time.',
   pickupInfo: {
     heading: 'Order Online & Pick Up',
     description:
-      'Place your order online and collect your freshly prepared parcel directly from our Vyanjan Restaurant pickup counter.',
+      'Place your order online and collect your freshly prepared parcel directly from our Trupti Snacks Restaurant pickup counter.',
     notice: 'Self Pickup Only • In-Store Counter Collection',
   },
   contact: {
     address: 'QX8M+J67, Navjivan Colony, Bilimora, Gujarat 396325, India',
     landmark: 'Rajhans Complex / Opposite L.M.P. School, College Road / Chikhli Road, Bilimora',
     phone: '+91 81558 16509',
-    email: 'contact@vyanjanrestaurant.com',
+    email: 'contact@truptisnacks.com',
   },
   operatingHours: {
     days: 'Monday – Sunday (All Days)',

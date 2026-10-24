@@ -6,7 +6,7 @@ const CustomerAuthContext = createContext(null);
 /**
  * CustomerAuthProvider Component
  *
- * Manages authenticated Customer state for Vyanjan Restaurant.
+ * Manages authenticated Customer state for Trupti Snacks Restaurant.
  *
  * Security & Reliability:
  * - Completely isolated from Admin authentication state

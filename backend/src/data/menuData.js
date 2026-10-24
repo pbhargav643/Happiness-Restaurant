@@ -1124,7 +1124,7 @@ export const MENU_ITEMS = [
   },
   {
     id: 'special-punjabi-paneer-happiness-spl',
-    name: 'PANEER HAPPINESS SPL.',
+    name: 'PANEER TRUPTI SPL.',
     category: 'special-punjabi',
     categoryName: 'Special Punjabi',
     price: 300,
@@ -1425,7 +1425,7 @@ export const MENU_ITEMS = [
   },
   {
     id: 'special-veg-punjabi-veg-happiness-spl',
-    name: 'VEG. HAPPINESS SPL.',
+    name: 'VEG. TRUPTI SPL.',
     category: 'special-veg-punjabi',
     categoryName: 'Special Veg. Punjabi',
     price: 220,
@@ -1821,7 +1821,7 @@ export const MENU_ITEMS = [
   },
   {
     id: 'rice-happiness-sp-dum-biryani',
-    name: 'HAPPINESS SP. DUM BIRYANI',
+    name: 'TRUPTI SP. DUM BIRYANI',
     category: 'rice',
     categoryName: 'Rice',
     price: 240,

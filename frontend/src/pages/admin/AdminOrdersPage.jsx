@@ -6,7 +6,7 @@ import ThermalPrintModal from '../../components/orders/ThermalPrintModal.jsx';
 
 /**
  * AdminOrdersPage Component
- * Orders Management Dashboard for VYANJAN RESTAURANT.
+ * Orders Management Dashboard for TRUPTI SNACKS RESTAURANT.
  *
  * Implements:
  * - Dedicated Dine-in QR Orders and Parcel Pickup Orders tabs with real-time active counts

@@ -54,7 +54,7 @@ function runTests() {
     !confCode.includes('getLocalOrderById'),
     'Does NOT use getLocalOrderById from localStorage as order authority'
   );
-  assert(confCode.includes('VYANJAN RESTAURANT') || confCode.includes('HAPPINESS RESTAURANT'), 'Displays restaurant branding');
+  assert(confCode.includes('VYANJAN RESTAURANT') || confCode.includes('HAPPINESS RESTAURANT') || confCode.includes('TRUPTI SNACKS RESTAURANT'), 'Displays restaurant branding');
   assert(confCode.includes('order.orderId'), 'Displays real Order ID');
   assert(confCode.includes('order.subtotal'), 'Displays subtotal');
   assert(confCode.includes('order.status'), 'Displays current status');

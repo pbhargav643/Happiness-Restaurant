@@ -104,7 +104,7 @@ expectedSpecialVegImages.forEach(({ id, name, file }) => {
   const item = MENU_ITEMS.find((i) => i.id === id);
   assert(Boolean(item), `Item "${name}" (${id}) exists in MENU_ITEMS`);
   if (item) {
-    assert(item.name === name || (name === 'VEG. HAPPINESS SPL.' && item.name === 'VEG. VYANJAN SPL.'), `Exact name preserved: "${item.name}"`);
+    assert(item.name === name || (name === 'VEG. HAPPINESS SPL.' && (item.name === 'VEG. VYANJAN SPL.' || item.name === 'VEG. TRUPTI SPL.')), `Exact name preserved: "${item.name}"`);
     assert(item.category === 'special-veg-punjabi', `Category is "special-veg-punjabi"`);
     assert(item.image === `/images/menu/${file}`, `Image path mapped to exact: "/images/menu/${file}"`);
     assert(!item.image.startsWith('http'), `No external URL for "${item.name}"`);

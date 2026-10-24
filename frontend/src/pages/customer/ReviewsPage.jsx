@@ -209,7 +209,7 @@ export default function ReviewsPage() {
         {/* Header Section */}
         <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14 space-y-3">
           <span className="text-xs font-extrabold uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 px-3.5 py-1.5 rounded-full border border-[#D4AF37]/20 inline-block">
-            VYANJAN RESTAURANT
+            TRUPTI SNACKS RESTAURANT
           </span>
           <h1 className="text-2xl sm:text-4xl font-extrabold text-primary tracking-tight">
             Customer Reviews
@@ -259,7 +259,7 @@ export default function ReviewsPage() {
                     <span>You have already submitted a review.</span>
                   </div>
                   <p className="text-amber-800 leading-relaxed">
-                    Thank you for sharing your feedback with Vyanjan Restaurant! Your review is currently active on our public reviews wall.
+                    Thank you for sharing your feedback with Trupti Snacks Restaurant! Your review is currently active on our public reviews wall.
                   </p>
                   <div className="mt-2 pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] text-amber-900">
                     <span>Your rating: {existingCustomerReview.rating} ★</span>

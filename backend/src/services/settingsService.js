@@ -4,10 +4,10 @@ import { validatePickupTime } from './orderService.js';
 
 // Default Singleton Restaurant Settings Configuration
 export const DEFAULT_SETTINGS = {
-  restaurantName: 'HAPPINESS RESTAURANT',
+  restaurantName: 'TRUPTI SNACKS RESTAURANT',
   tagline: 'Authentic Delicacies • Online Parcel Pickup',
   phone: '+91 81558 16509',
-  email: 'contact@happinessrestaurant.com',
+  email: 'contact@truptisnacks.com',
   address: 'QX8M+J67, Navjivan Colony, Bilimora, Gujarat 396325, India',
   operatingDays: 'Monday – Sunday (All Days)',
   pickupEnabled: true,

@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 /**
  * Review Mongoose Schema
  *
- * Dedicated collection for Happiness Restaurant Customer Reviews and Ratings.
+ * Dedicated collection for Trupti Snacks Restaurant Customer Reviews and Ratings.
  *
  * Isolated from:
  * - Orders, MenuItem, NotificationLog, RestaurantSettings, Admin, Customer auth
