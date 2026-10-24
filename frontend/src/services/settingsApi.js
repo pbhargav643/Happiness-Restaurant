@@ -36,11 +36,23 @@ export const settingsApi = {
 
       if (response && response.success && response.data) {
         const raw = response.data;
+        const normalizedName =
+          !raw.restaurantName ||
+          raw.restaurantName === 'VYANJAN RESTAURANT' ||
+          raw.restaurantName === 'HAPPINESS RESTAURANT'
+            ? DEFAULT_FRONTEND_SETTINGS.restaurantName
+            : raw.restaurantName;
+        const normalizedEmail =
+          !raw.email ||
+          raw.email.includes('vyanjanrestaurant.com') ||
+          raw.email.includes('happinessrestaurant.com')
+            ? DEFAULT_FRONTEND_SETTINGS.email
+            : raw.email;
         return {
-          restaurantName: raw.restaurantName || DEFAULT_FRONTEND_SETTINGS.restaurantName,
+          restaurantName: normalizedName,
           tagline: raw.tagline || DEFAULT_FRONTEND_SETTINGS.tagline,
           phone: raw.phone || DEFAULT_FRONTEND_SETTINGS.phone,
-          email: raw.email || DEFAULT_FRONTEND_SETTINGS.email,
+          email: normalizedEmail,
           address: raw.address || DEFAULT_FRONTEND_SETTINGS.address,
           landmark: raw.landmark || DEFAULT_FRONTEND_SETTINGS.landmark,
           operatingDays: raw.operatingDays || DEFAULT_FRONTEND_SETTINGS.operatingDays,

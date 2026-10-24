@@ -31,6 +31,22 @@ if (!conn) {
   } catch (tableSeedErr) {
     console.warn('[Restaurant Server] Table seed note:', tableSeedErr.message);
   }
+
+  // Idempotent Restaurant Settings branding migration
+  try {
+    const RestaurantSettings = (await import('./src/models/RestaurantSettings.js')).default;
+    await RestaurantSettings.updateMany(
+      {
+        $or: [
+          { restaurantName: { $in: ['VYANJAN RESTAURANT', 'HAPPINESS RESTAURANT', 'HAPPINESS RESTAURANT & CAFE'] } },
+          { restaurantName: { $regex: /vyanjan|happiness/i } },
+        ],
+      },
+      { $set: { restaurantName: 'TRUPTI SNACKS RESTAURANT', email: 'contact@truptisnacks.com' } }
+    );
+  } catch (settingsMigrateErr) {
+    console.warn('[Restaurant Server] Settings migration note:', settingsMigrateErr.message);
+  }
 }
 
 

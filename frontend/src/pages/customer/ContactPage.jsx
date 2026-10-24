@@ -237,7 +237,9 @@ export default function ContactPage() {
                     Official Details
                   </span>
                   <h2 className="text-xl sm:text-2xl font-black text-primary mt-1">
-                    {settings?.restaurantName || RESTAURANT_CONFIG.name}
+                    {(!settings?.restaurantName || settings.restaurantName === 'VYANJAN RESTAURANT' || settings.restaurantName === 'HAPPINESS RESTAURANT')
+                      ? RESTAURANT_CONFIG.name
+                      : settings.restaurantName}
                   </h2>
                 </div>
 

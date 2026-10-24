@@ -11,7 +11,11 @@ import { useSettings } from '../../context/SettingsContext';
  */
 export default function Brand({ compact = false }) {
   const { settings } = useSettings();
-  const restaurantName = settings?.restaurantName || RESTAURANT_CONFIG.name;
+  const rawName = settings?.restaurantName || RESTAURANT_CONFIG.name;
+  const restaurantName =
+    rawName === 'VYANJAN RESTAURANT' || rawName === 'HAPPINESS RESTAURANT'
+      ? RESTAURANT_CONFIG.name
+      : rawName;
   const brandWords = restaurantName.split(' ');
 
   return (

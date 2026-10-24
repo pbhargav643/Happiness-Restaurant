@@ -62,6 +62,34 @@ export const settingsService = {
       const saved = await initial.save();
       settings = saved.toObject();
       delete settings.__v;
+    } else if (
+      !settings.restaurantName ||
+      settings.restaurantName === 'VYANJAN RESTAURANT' ||
+      settings.restaurantName === 'HAPPINESS RESTAURANT' ||
+      settings.restaurantName.includes('HAPPINESS') ||
+      settings.restaurantName.includes('VYANJAN')
+    ) {
+      try {
+        await RestaurantSettings.updateOne(
+          { _id: settings._id },
+          {
+            $set: {
+              restaurantName: 'TRUPTI SNACKS RESTAURANT',
+              email: 'contact@truptisnacks.com',
+            },
+          }
+        );
+      } catch {
+        // non-blocking fallback
+      }
+      settings.restaurantName = 'TRUPTI SNACKS RESTAURANT';
+      if (
+        !settings.email ||
+        settings.email.includes('vyanjanrestaurant.com') ||
+        settings.email.includes('happinessrestaurant.com')
+      ) {
+        settings.email = 'contact@truptisnacks.com';
+      }
     }
 
     return {

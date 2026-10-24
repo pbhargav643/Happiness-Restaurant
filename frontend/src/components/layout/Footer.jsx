@@ -16,7 +16,11 @@ export default function Footer() {
   const { cartTotalCount } = useCart();
   const { settings } = useSettings();
 
-  const restaurantName = settings?.restaurantName || RESTAURANT_CONFIG.name;
+  const rawName = settings?.restaurantName || RESTAURANT_CONFIG.name;
+  const restaurantName =
+    rawName === 'VYANJAN RESTAURANT' || rawName === 'HAPPINESS RESTAURANT'
+      ? RESTAURANT_CONFIG.name
+      : rawName;
   const phone = settings?.phone || RESTAURANT_CONFIG.contact?.phone;
   const address = settings?.address || RESTAURANT_CONFIG.contact?.address;
   const operatingDays = settings?.operatingDays || RESTAURANT_CONFIG.operatingHours?.days;
