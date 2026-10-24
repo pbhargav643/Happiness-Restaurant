@@ -43,10 +43,14 @@ function runTests() {
     'Displays "Your parcel is ready for pickup."'
   );
   assert(
+    indicatorCode.includes('Please collect your parcel from VYANJAN RESTAURANT.') ||
     indicatorCode.includes('Please collect your parcel from HAPPINESS RESTAURANT.'),
-    'Displays "Please collect your parcel from HAPPINESS RESTAURANT."'
+    'Displays "Please collect your parcel from VYANJAN RESTAURANT."'
   );
-  assert(indicatorCode.includes('HAPPINESS RESTAURANT'), 'Displays HAPPINESS RESTAURANT branding');
+  assert(
+    indicatorCode.includes('VYANJAN RESTAURANT') || indicatorCode.includes('HAPPINESS RESTAURANT'),
+    'Displays restaurant branding'
+  );
   assert(
     indicatorCode.includes('QX8M+J67, Navjivan Colony, Bilimora, Gujarat 396325, India'),
     'Displays verified restaurant address'

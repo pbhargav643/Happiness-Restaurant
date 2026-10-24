@@ -1,5 +1,5 @@
 /**
- * Happiness Restaurant — High-Reliability Pure JavaScript QR Code Generator
+ * Vyanjan Restaurant — High-Reliability Pure JavaScript QR Code Generator
  * Fully compliant with ISO/IEC 18004 QR Code Model 2 Specification.
  *
  * Implemented without external npm dependencies to guarantee zero runtime bloat

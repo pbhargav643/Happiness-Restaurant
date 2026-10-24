@@ -6,7 +6,7 @@ import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig';
 /**
  * ForgotPasswordPage Component
  *
- * Dedicated customer password recovery portal for Happiness Restaurant.
+ * Dedicated customer password recovery portal for Vyanjan Restaurant.
  *
  * Requirements:
  * - Title: "Forgot Password?"

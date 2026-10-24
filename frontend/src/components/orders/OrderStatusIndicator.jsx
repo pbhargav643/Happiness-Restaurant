@@ -268,7 +268,7 @@ export default function OrderStatusIndicator({
               Your parcel is ready for pickup.
             </p>
             <p className="text-xs sm:text-sm text-emerald-800 font-medium">
-              Please collect your parcel from HAPPINESS RESTAURANT.
+              Please collect your parcel from VYANJAN RESTAURANT.
             </p>
           </div>
 
@@ -309,7 +309,7 @@ export default function OrderStatusIndicator({
             </div>
             <div>
               <strong className="text-sm font-extrabold text-primary block">
-                HAPPINESS RESTAURANT
+                VYANJAN RESTAURANT
               </strong>
               <p className="text-xs text-muted leading-relaxed mt-0.5">
                 QX8M+J67, Navjivan Colony, Bilimora, Gujarat 396325, India
@@ -323,11 +323,11 @@ export default function OrderStatusIndicator({
           {/* Action CTAs: Get Directions and View Order Details */}
           <div className="pt-2 flex flex-wrap items-center gap-3">
             <a
-              href="https://www.google.com/maps/search/?api=1&query=Happiness+Restaurant+Navjivan+Colony+Bilimora+Gujarat+396325"
+              href="https://www.google.com/maps/search/?api=1&query=Vyanjan+Restaurant+Navjivan+Colony+Bilimora+Gujarat+396325"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs active:scale-98 cursor-pointer"
-              aria-label="Get Directions to Happiness Restaurant on Google Maps"
+              aria-label="Get Directions to Vyanjan Restaurant on Google Maps"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -365,7 +365,7 @@ export default function OrderStatusIndicator({
               ORDER COMPLETED
             </h3>
             <p className="text-slate-700 leading-relaxed">
-              Your parcel was successfully collected from HAPPINESS RESTAURANT. This order remains permanently recorded in your Order History.
+              Your parcel was successfully collected from VYANJAN RESTAURANT. This order remains permanently recorded in your Order History.
             </p>
           </div>
         </div>

@@ -10,7 +10,7 @@ import { tableApi } from '../../services/tableApi';
  *
  * Responsive Dine-in Entry flow that identifies a table from URL query parameters.
  * Requirements:
- * - Restaurant name: HAPPINESS RESTAURANT
+ * - Restaurant name: VYANJAN RESTAURANT
  * - Ordering mode: Dine-in
  * - Table number and table name, when valid table data is available
  * - A `Browse Menu` button

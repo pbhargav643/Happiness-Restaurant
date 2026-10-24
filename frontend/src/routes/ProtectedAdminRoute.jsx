@@ -24,7 +24,7 @@ export default function ProtectedAdminRoute({ children }) {
           Verifying Admin Access...
         </p>
         <span className="text-xs text-slate-400 mt-1">
-          Happiness Restaurant Portal
+          Vyanjan Restaurant Portal
         </span>
       </div>
     );

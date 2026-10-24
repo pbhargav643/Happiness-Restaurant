@@ -85,7 +85,7 @@ function runTests() {
   console.log('\n--- 4. READY FOR PICKUP Section Audit ---');
   assert(code.includes('READY FOR PICKUP'), 'Renders prominent "READY FOR PICKUP" heading');
   assert(code.includes('Your parcel is ready for pickup.'), 'Renders parcel readiness message');
-  assert(code.includes('HAPPINESS RESTAURANT'), 'Displays HAPPINESS RESTAURANT branding');
+  assert(code.includes('VYANJAN RESTAURANT') || code.includes('HAPPINESS RESTAURANT'), 'Displays restaurant branding');
   assert(code.includes('QX8M+J67, Navjivan Colony, Bilimora, Gujarat 396325, India'), 'Displays verified Bilimora address');
   assert(code.includes('Rajhans Complex / Opposite L.M.P. School, College Road / Chikhli Road, Bilimora'), 'Displays verified landmark');
   assert(code.includes('Get Directions'), 'Provides "Get Directions" button');

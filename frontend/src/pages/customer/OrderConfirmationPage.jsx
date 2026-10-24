@@ -367,7 +367,7 @@ export default function OrderConfirmationPage() {
                 <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 text-xs text-amber-900 space-y-1">
                   <strong className="block font-bold">Important Pickup Notice:</strong>
                   <p className="text-[11px] leading-relaxed text-amber-800">
-                    Your order will be available for collection at the selected pickup time. Please arrive at the HAPPINESS RESTAURANT pickup counter with your Order ID.
+                    Your order will be available for collection at the selected pickup time. Please arrive at the VYANJAN RESTAURANT pickup counter with your Order ID.
                   </p>
                   <p className="text-[10px] font-semibold text-rose-800 pt-0.5">
                     No home delivery is available.

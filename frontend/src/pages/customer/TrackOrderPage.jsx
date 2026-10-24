@@ -873,7 +873,7 @@ export default function TrackOrderPage() {
               {/* Subtotal & Pickup Service Note */}
               <div className="pt-4 border-t border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="text-xs text-muted">
-                  <span className="font-semibold text-emerald-800">Counter Takeaway:</span> Collection at HAPPINESS RESTAURANT. No delivery service.
+                  <span className="font-semibold text-emerald-800">Counter Takeaway:</span> Collection at VYANJAN RESTAURANT. No delivery service.
                 </div>
                 <div className="flex items-baseline gap-2 self-end sm:self-auto">
                   <span className="text-xs text-muted">Subtotal:</span>

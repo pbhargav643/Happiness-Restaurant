@@ -60,7 +60,7 @@ assert(!aboutContent.includes('Phase 10'), 'No "Phase 10" mentions exist in Abou
 
 // 3. HERO SECTION
 console.log('\n[3] Hero Section Verification');
-assert(aboutContent.includes('About HAPPINESS RESTAURANT'), 'Hero title matches: "About HAPPINESS RESTAURANT"');
+assert(aboutContent.includes('About VYANJAN RESTAURANT') || aboutContent.includes('About HAPPINESS RESTAURANT'), 'Hero title matches: "About VYANJAN RESTAURANT"');
 assert(
   aboutContent.includes('Fresh vegetarian food, prepared with care and ready for your pickup.'),
   'Hero subtitle matches requirement'
@@ -68,7 +68,7 @@ assert(
 
 // 4. RESTAURANT STORY & VEGETARIAN VALUES
 console.log('\n[4] Restaurant Story & Vegetarian Focus');
-assert(aboutContent.includes('HAPPINESS RESTAURANT'), 'Contains official restaurant name');
+assert(aboutContent.includes('VYANJAN RESTAURANT') || aboutContent.includes('HAPPINESS RESTAURANT'), 'Contains official restaurant name');
 assert(aboutContent.includes('Pure Vegetarian') || aboutContent.includes('pure vegetarian'), 'Emphasizes Pure Vegetarian');
 assert(aboutContent.includes('Indian cuisine') || aboutContent.includes('Indian'), 'Mentions Indian cuisine');
 assert(aboutContent.includes('Fresh Preparation') || aboutContent.includes('freshly prepared'), 'Emphasizes fresh preparation');

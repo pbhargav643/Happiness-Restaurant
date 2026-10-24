@@ -6,7 +6,7 @@ const CustomerAuthContext = createContext(null);
 /**
  * CustomerAuthProvider Component
  *
- * Manages authenticated Customer state for Happiness Restaurant.
+ * Manages authenticated Customer state for Vyanjan Restaurant.
  *
  * Security & Reliability:
  * - Completely isolated from Admin authentication state

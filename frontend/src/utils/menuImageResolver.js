@@ -1,6 +1,6 @@
 /**
  * Centralized Menu Image Mapping & Resolver
- * HAPPINESS RESTAURANT
+ * VYANJAN RESTAURANT
  *
  * Provides a single source of truth for menu food images:
  * - Robust exact key normalization (case-insensitive, strips punctuation, normalizes spacing & slugs)
@@ -102,6 +102,7 @@ export const MENU_IMAGE_REGISTRY = {
   'paneer pasanda': '/images/menu/paneer-pasanda.jpg',
   'cheese begam bahar': '/images/menu/cheese-begam-bahar.jpg',
   'paneer happiness spl': '/images/menu/paneer-happiness-spl.jpg',
+  'paneer vyanjan spl': '/images/menu/paneer-happiness-spl.jpg',
   'sp paneer bhurji dry': '/images/menu/sp-paneer-bhurji-dry.jpg',
   'paneer patiyala': '/images/menu/paneer-patiyala.jpg',
   'paneer moonlight': '/images/menu/paneer-moonlight.jpg',
@@ -141,6 +142,7 @@ export const MENU_IMAGE_REGISTRY = {
   'veg sabnami': '/images/menu/veg_sabnami.jpg',
   'mushroom masala': '/images/menu/mushroom_masala.jpg',
   'veg happiness spl': '/images/menu/veg_happiness_spl.jpg',
+  'veg vyanjan spl': '/images/menu/veg_happiness_spl.jpg',
 
   // --- Category 11: Garden Fresh Vegetables (11 dishes) ---
   'jeera aloo': '/images/menu/jeera_aloo.jpg',
@@ -182,6 +184,8 @@ export const MENU_IMAGE_REGISTRY = {
   'hydrabadi biryani': '/images/menu/hyderabadi-biryani.jpg',
   'happiness sp dum biryani': '/images/menu/happiness-sp-dum-biryani.jpg',
   'happiness sp. dum biryani': '/images/menu/happiness-sp-dum-biryani.jpg',
+  'vyanjan sp dum biryani': '/images/menu/happiness-sp-dum-biryani.jpg',
+  'vyanjan sp. dum biryani': '/images/menu/happiness-sp-dum-biryani.jpg',
 
   // --- Category 14: Dal (4 dishes) ---
   'dal fry': '/images/menu/dal-fry.jpg',

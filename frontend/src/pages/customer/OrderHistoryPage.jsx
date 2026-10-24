@@ -376,7 +376,7 @@ export default function OrderHistoryPage() {
                 </h3>
                 <p className="text-xs sm:text-sm text-muted max-w-sm mx-auto leading-relaxed">
                   {hasHiddenOrders
-                    ? 'Your previous completed orders have been removed from this view. Your restaurant records remain safely preserved with HAPPINESS RESTAURANT.'
+                    ? 'Your previous completed orders have been removed from this view. Your restaurant records remain safely preserved with VYANJAN RESTAURANT.'
                     : 'You have not placed any takeaway parcel orders yet. Explore our delicious restaurant menu and place your first order.'}
                 </p>
               </div>

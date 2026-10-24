@@ -6,7 +6,7 @@ import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig';
 /**
  * AdminLoginPage Component
  *
- * Professional administrative login portal for Happiness Restaurant.
+ * Professional administrative login portal for Vyanjan Restaurant.
  *
  * Features:
  * - Direct authentication via AuthContext
@@ -152,7 +152,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@happinessrestaurant.com"
+                  placeholder="admin@vyanjanrestaurant.com"
                   className="block w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
                 />
               </div>

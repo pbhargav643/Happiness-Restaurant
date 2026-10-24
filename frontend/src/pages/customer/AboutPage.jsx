@@ -6,7 +6,7 @@ import { useSettings } from '../../context/SettingsContext.jsx';
 
 /**
  * AboutPage Component
- * Official About Page for HAPPINESS RESTAURANT
+ * Official About Page for VYANJAN RESTAURANT
  *
  * Communicates:
  * - Restaurant Story: Factual, authentic focus on fresh Indian vegetarian cuisine
@@ -205,7 +205,7 @@ export default function AboutPage() {
               id="about-hero-title"
               className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary tracking-tight leading-tight"
             >
-              About HAPPINESS RESTAURANT
+              About VYANJAN RESTAURANT
             </h1>
 
             <p className="text-base sm:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
@@ -235,7 +235,7 @@ export default function AboutPage() {
 
               <div className="space-y-4 text-muted text-sm sm:text-base leading-relaxed">
                 <p>
-                  <strong className="text-primary font-semibold">HAPPINESS RESTAURANT</strong> is
+                  <strong className="text-primary font-semibold">VYANJAN RESTAURANT</strong> is
                   focused on serving freshly prepared vegetarian dishes for customers who value
                   good food, convenient ordering, and reliable parcel pickup.
                 </p>
@@ -275,7 +275,7 @@ export default function AboutPage() {
                 <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden relative border border-surface-border/70 group">
                   <img
                     src="/images/hero/restaurant-hero.jpg"
-                    alt="Authentic Indian vegetarian spread from Happiness Restaurant"
+                    alt="Authentic Indian vegetarian spread from Vyanjan Restaurant"
                     className="w-full h-full object-cover object-center block group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
@@ -378,7 +378,7 @@ export default function AboutPage() {
                 How Self Pickup Works
               </h2>
               <p className="text-xs sm:text-sm text-muted-light leading-relaxed">
-                HAPPINESS RESTAURANT operates strictly on a self-pickup parcel model. Every order
+                VYANJAN RESTAURANT operates strictly on a self-pickup parcel model. Every order
                 is pre-ordered online and collected directly from our restaurant pickup counter.
               </p>
             </div>

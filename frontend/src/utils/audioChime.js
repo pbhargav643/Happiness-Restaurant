@@ -1,5 +1,5 @@
 /**
- * Audio Chime Service for Happiness Restaurant Admin Portal
+ * Audio Chime Service for Vyanjan Restaurant Admin Portal
  *
  * Provides a professional, lightweight, zero-dependency browser notification
  * chime for newly placed customer pickup orders.

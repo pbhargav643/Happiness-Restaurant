@@ -25,3 +25,7 @@ yarn-debug.log*
 yarn-error.log*
 .vscode/
 .idea/
+
+# --- SAFEGUARD: Prevent local pre-fix backup archives from Git tracking ---
+.backups/
+.backups/*

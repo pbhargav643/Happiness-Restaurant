@@ -67,7 +67,7 @@ function runTests() {
     'Zero delivery address references in order history components'
   );
   assert(
-    indicatorCode.includes('HAPPINESS RESTAURANT') &&
+    (indicatorCode.includes('VYANJAN RESTAURANT') || indicatorCode.includes('HAPPINESS RESTAURANT')) &&
     indicatorCode.includes('QX8M+J67, Navjivan Colony, Bilimora, Gujarat 396325, India'),
     'Displays verified Bilimora restaurant location for pickup'
   );

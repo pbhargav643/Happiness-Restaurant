@@ -42,7 +42,7 @@ export function ThermalReceiptSlip({ order, paperWidth = '80mm', isPreview = fal
       {/* 1. RESTAURANT HEADER */}
       <div className="text-center pb-2 border-b border-dashed border-black">
         <h1 className={`${is53mm ? 'text-sm font-black' : 'text-base font-black'} uppercase tracking-tight`}>
-          HAPPINESS RESTAURANT
+          VYANJAN RESTAURANT
         </h1>
         <p className={`${is53mm ? 'text-[9px]' : 'text-[11px]'} font-semibold uppercase`}>
           Pure Vegetarian Delicacies
@@ -207,7 +207,7 @@ export function ThermalReceiptSlip({ order, paperWidth = '80mm', isPreview = fal
       {/* 7. RECEIPT FOOTER */}
       <div className="pt-2 text-center text-[9.5px] space-y-0.5">
         <p className="font-bold">*** THANK YOU! VISIT AGAIN ***</p>
-        <p className="text-[8px] text-slate-600">Happiness Restaurant &bull; Pure Veg Delicacies</p>
+        <p className="text-[8px] text-slate-600">Vyanjan Restaurant &bull; Pure Veg Delicacies</p>
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ import { orderApi } from '../../services/orderApi';
  * DineInCheckoutPage Component (Phase 3 Prompt 2 Refined)
  *
  * Dedicated Dine-in checkout review:
- * - Displays Restaurant name: HAPPINESS RESTAURANT
+ * - Displays Restaurant name: VYANJAN RESTAURANT
  * - Displays Order type: Dine-in
  * - Displays Table number and seating details
  * - Displays Selected items, quantities, and prices

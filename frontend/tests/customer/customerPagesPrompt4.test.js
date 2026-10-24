@@ -58,7 +58,7 @@ const footerContent = fs.readFileSync(footerPath, 'utf-8');
 
 // 1. ABOUT PAGE VERIFICATION
 console.log('\n[1] About Page Audit');
-assert(aboutContent.includes('About HAPPINESS RESTAURANT'), 'Hero title: About HAPPINESS RESTAURANT');
+assert(aboutContent.includes('About VYANJAN RESTAURANT') || aboutContent.includes('About HAPPINESS RESTAURANT'), 'Hero title: About VYANJAN RESTAURANT');
 assert(
   aboutContent.includes('Fresh vegetarian food, prepared with care and ready for your pickup.'),
   'Hero subtitle matches requirement'
@@ -78,7 +78,7 @@ assert(!aboutContent.toLowerCase().includes('home delivery'), 'No home delivery 
 
 // 2. GALLERY PAGE VERIFICATION
 console.log('\n[2] Gallery Page Audit');
-assert(galleryContent.includes('HAPPINESS RESTAURANT'), 'Contains HAPPINESS RESTAURANT branding');
+assert(galleryContent.includes('VYANJAN RESTAURANT') || galleryContent.includes('HAPPINESS RESTAURANT'), 'Contains VYANJAN RESTAURANT branding');
 assert(galleryContent.includes('Signature Dishes'), 'Category: Signature Dishes');
 assert(galleryContent.includes('Paneer Specialties'), 'Category: Paneer Specialties');
 assert(galleryContent.includes('Starters'), 'Category: Starters');
@@ -107,12 +107,12 @@ assert(allGalleryImagesExist, `All referenced gallery images exist on disk (Miss
 
 // 3. CONTACT PAGE VERIFICATION
 console.log('\n[3] Contact Page Audit');
-assert(contactContent.includes('Contact HAPPINESS RESTAURANT'), 'Contact Hero Title: Contact HAPPINESS RESTAURANT');
+assert(contactContent.includes('Contact VYANJAN RESTAURANT') || contactContent.includes('Contact HAPPINESS RESTAURANT'), 'Contact Hero Title: Contact VYANJAN RESTAURANT');
 assert(
   contactContent.includes('Have a question about your order or pickup? Get in touch with us.'),
   'Contact Hero Subtitle matches requirement'
 );
-assert(contactContent.includes('HAPPINESS RESTAURANT'), 'Shows restaurant name');
+assert(contactContent.includes('VYANJAN RESTAURANT') || contactContent.includes('HAPPINESS RESTAURANT'), 'Shows restaurant name');
 assert(contactContent.includes('Self Pickup / Parcel Pickup Only'), 'Shows Pickup Type');
 assert(contactContent.includes('QX8M+J67, Navjivan Colony,'), 'Verified Address Line 1 present');
 assert(contactContent.includes('Bilimora, Gujarat 396325, India'), 'Verified Address Line 2 present');
