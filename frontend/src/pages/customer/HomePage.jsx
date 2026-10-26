@@ -11,21 +11,22 @@ import FinalOrderCTA from '../../components/home/FinalOrderCTA';
 
 /**
  * HomePage Component
- * Complete Customer Home Page layout structured according to Phase 3 Prompt 3:
- * 1. Hero Section
- * 2. Featured Menu (Customer Favorites + View Full Menu CTA)
- * 3. Popular Categories (Categories from physical menu cards)
- * 4. Special Offers / Highlights (Genuine system benefits)
- * 5. Pickup Experience (4-step in-store pickup flow)
- * 6. About Restaurant Preview (Good Food, Made With Care)
- * 7. Restaurant Highlights (Quality & Service Standards)
- * 8. Customer Testimonials (Structured demonstration reviews)
- * 9. Final Order CTA (Order Ahead. Pick Up Fresh.)
+ * Customer Home Page layout with corrected section order:
+ * 1. Standalone Food Showcase Image Banner (Appears FIRST, directly below the navbar)
+ * 2. Complete Premium Food Hero Section (Immediately AFTER the first image)
+ * 3. Featured Menu (Customer Favorites + View Full Menu CTA)
+ * 4. Popular Categories (Categories from physical menu cards)
+ * 5. Special Offers / Highlights (Genuine system benefits)
+ * 6. Pickup Experience (4-step in-store pickup flow)
+ * 7. About Restaurant Preview (Good Food, Made With Care)
+ * 8. Restaurant Highlights (Quality & Service Standards)
+ * 9. Customer Testimonials (Structured demonstration reviews)
+ * 10. Final Order CTA (Order Ahead. Pick Up Fresh.)
  */
 export default function HomePage() {
   return (
-    <div className="w-full">
-      {/* 1. Hero Section */}
+    <div className="w-full overflow-x-clip">
+      {/* 1. Integrated Trupti Snacks Restaurant Hero Section */}
       <HeroSection />
 
       {/* 2. Featured Menu */}

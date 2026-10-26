@@ -3,6 +3,7 @@ import Container from '../common/Container';
 
 /**
  * Genuine Restaurant Quality & Service Highlights
+ * Styled with an ultra-premium black, gold, and cream palette.
  */
 const QUALITY_HIGHLIGHTS = [
   {
@@ -51,18 +52,20 @@ const QUALITY_HIGHLIGHTS = [
 export default function RestaurantHighlightsSection() {
   return (
     <section
-      className="py-14 sm:py-20 bg-secondary border-b border-surface-border"
+      className="py-14 sm:py-20 lg:py-24 bg-secondary border-b border-surface-border relative"
       aria-labelledby="restaurant-highlights-heading"
     >
       <Container>
         {/* Section Header */}
-        <div className="max-w-2xl mx-auto text-center space-y-2 mb-10 sm:mb-14">
-          <span className="text-xs font-bold text-accent tracking-widest uppercase inline-block">
-            OUR PROMISE
-          </span>
+        <div className="max-w-2xl mx-auto text-center space-y-2.5 mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-accent/20">
+            <span className="text-[10px] sm:text-xs font-bold text-accent tracking-[0.2em] uppercase">
+              ✦ OUR COMMITMENT ✦
+            </span>
+          </div>
           <h2
             id="restaurant-highlights-heading"
-            className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary tracking-tight"
+            className="text-2xl xs:text-3xl sm:text-4xl lg:text-5xl font-extrabold text-primary tracking-tight"
           >
             Service & Quality Standards
           </h2>
@@ -72,21 +75,26 @@ export default function RestaurantHighlightsSection() {
         </div>
 
         {/* 4-Item Minimalist Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {QUALITY_HIGHLIGHTS.map((item, idx) => (
             <div
               key={idx}
-              className="p-5 sm:p-6 rounded-2xl bg-white border border-surface-border hover:border-accent/40 hover:shadow-xs transition-all space-y-3"
+              className="p-6 sm:p-7 rounded-2xl bg-white border border-surface-border hover:border-accent/60 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 space-y-4 relative overflow-hidden group"
             >
-              <div className="w-10 h-10 rounded-xl bg-secondary-dark/70 border border-surface-border/80 flex items-center justify-center">
+              {/* Top Accent Strip */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+
+              <div className="w-12 h-12 rounded-2xl bg-secondary-dark/70 border border-surface-border/80 flex items-center justify-center text-accent group-hover:bg-primary group-hover:text-accent group-hover:border-primary transition-all duration-300 shadow-2xs">
                 {item.icon}
               </div>
-              <h3 className="font-bold text-sm sm:text-base text-primary">
-                {item.title}
-              </h3>
-              <p className="text-xs text-muted leading-relaxed">
-                {item.description}
-              </p>
+              <div className="space-y-1.5">
+                <h3 className="font-extrabold text-base sm:text-lg text-primary group-hover:text-amber-800 transition-colors">
+                  {item.title}
+                </h3>
+                <p className="text-xs sm:text-[13px] text-muted leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
             </div>
           ))}
         </div>
@@ -94,3 +102,4 @@ export default function RestaurantHighlightsSection() {
     </section>
   );
 }
+

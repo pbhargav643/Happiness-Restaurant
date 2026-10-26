@@ -135,8 +135,13 @@ export default function AdminLayout() {
         <div className="space-y-6">
           {/* Admin Brand */}
           <div className="flex items-center space-x-3 pb-4 border-b border-primary-light/40">
-            <div className="w-9 h-9 rounded-xl bg-accent text-primary font-black flex items-center justify-center text-sm shadow-xs">
-              AD
+            <div className="w-9 h-9 rounded-xl bg-white p-0.5 flex items-center justify-center flex-shrink-0 shadow-xs overflow-hidden">
+              <img
+                src="/images/logo/trupti-snacks-restaurant-logo.png"
+                alt={`${restaurantName} Logo`}
+                className="w-full h-full object-contain"
+                loading="eager"
+              />
             </div>
             <div>
               <span className="font-extrabold text-sm tracking-wide text-white block uppercase">

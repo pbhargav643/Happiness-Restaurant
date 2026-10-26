@@ -9,6 +9,7 @@ import Container from '../common/Container';
  * In accordance with Phase 3 instructions, NO real customer identities
  * or fabricated review claims are invented. These placeholders illustrate
  * the UI architecture and will be populated with authentic guest reviews later.
+ * Styled with an ultra-premium black, gold, and cream palette.
  */
 const DEMO_TESTIMONIALS = [
   {
@@ -40,26 +41,28 @@ const DEMO_TESTIMONIALS = [
 export default function TestimonialsSection() {
   return (
     <section
-      className="py-14 sm:py-20 bg-white border-b border-surface-border"
+      className="py-14 sm:py-20 lg:py-24 bg-white border-b border-surface-border relative"
       aria-labelledby="testimonials-heading"
     >
       <Container>
         {/* Section Header */}
-        <div className="max-w-2xl mx-auto text-center space-y-2 mb-10 sm:mb-14">
-          <span className="text-xs font-bold text-accent tracking-widest uppercase inline-block">
-            GUEST EXPERIENCES
-          </span>
+        <div className="max-w-2xl mx-auto text-center space-y-2.5 mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary border border-accent/20">
+            <span className="text-[10px] sm:text-xs font-bold text-accent tracking-[0.2em] uppercase">
+              ✦ GUEST EXPERIENCES ✦
+            </span>
+          </div>
           <h2
             id="testimonials-heading"
-            className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary tracking-tight"
+            className="text-2xl xs:text-3xl sm:text-4xl lg:text-5xl font-extrabold text-primary tracking-tight"
           >
             What Takeaway Guests Value
           </h2>
           <p className="text-sm sm:text-base text-muted leading-relaxed">
             Designed to ensure your online takeaway parcel is always hot, fresh, and ready on time.
           </p>
-          <div className="pt-1">
-            <span className="inline-block text-[11px] text-muted-light bg-muted-bg px-2.5 py-0.5 rounded-full border border-surface-border">
+          <div className="pt-1.5">
+            <span className="inline-block text-[11px] text-muted-light bg-muted-bg px-3 py-1 rounded-full border border-surface-border">
               Architectural UI Preview &bull; Verified reviews will be populated upon launch
             </span>
           </div>
@@ -70,9 +73,17 @@ export default function TestimonialsSection() {
           {DEMO_TESTIMONIALS.map((review) => (
             <article
               key={review.id}
-              className="p-6 rounded-2xl bg-secondary border border-surface-border flex flex-col justify-between hover:shadow-xs hover:border-accent/40 transition-all"
+              className="p-6 sm:p-8 rounded-2xl bg-secondary/60 border border-surface-border hover:bg-white hover:border-accent/60 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
             >
-              <div className="space-y-3">
+              {/* Background Quote Watermark */}
+              <div
+                className="absolute top-3 right-5 text-6xl font-serif text-accent/15 select-none pointer-events-none group-hover:text-accent/25 transition-colors"
+                aria-hidden="true"
+              >
+                &ldquo;
+              </div>
+
+              <div className="space-y-3.5 relative z-10">
                 {/* 5-Star Rating SVGs */}
                 <div className="flex items-center space-x-1" aria-label="5 out of 5 stars">
                   {[...Array(review.rating)].map((_, i) => (
@@ -89,22 +100,22 @@ export default function TestimonialsSection() {
                 </div>
 
                 {/* Review Content */}
-                <p className="text-xs sm:text-sm text-primary leading-relaxed italic">
+                <p className="text-xs sm:text-sm text-primary leading-relaxed italic font-normal">
                   &ldquo;{review.quote}&rdquo;
                 </p>
               </div>
 
               {/* Author & Order Tag */}
-              <div className="mt-5 pt-3 border-t border-surface-border/70 flex items-center justify-between text-xs">
+              <div className="mt-6 pt-3.5 border-t border-surface-border/70 flex items-center justify-between text-xs relative z-10">
                 <div>
-                  <span className="font-bold text-primary block text-xs">
+                  <span className="font-extrabold text-primary block text-xs sm:text-[13px]">
                     {review.author}
                   </span>
-                  <span className="text-[10px] text-accent-hover font-medium">
+                  <span className="text-[10px] text-accent font-bold uppercase tracking-wider">
                     {review.orderType}
                   </span>
                 </div>
-                <span className="text-[10px] text-muted-light bg-white px-2 py-0.5 rounded border border-surface-border">
+                <span className="text-[10px] text-muted font-bold bg-white px-2.5 py-0.5 rounded-full border border-surface-border shadow-2xs">
                   Demo
                 </span>
               </div>
@@ -115,3 +126,4 @@ export default function TestimonialsSection() {
     </section>
   );
 }
+

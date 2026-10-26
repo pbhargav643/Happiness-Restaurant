@@ -2,37 +2,42 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Container from '../common/Container';
 import { RESTAURANT_CONFIG } from '../../constants/restaurantConfig';
+import { useSettings } from '../../context/SettingsContext';
 
 /**
  * FinalOrderCTA Component
  * High-conversion closing section on the Home Page reinforcing
  * advance parcel ordering and in-store pickup convenience.
+ * Styled with an ultra-premium black, gold, and cream palette.
  */
 export default function FinalOrderCTA() {
+  const { settings } = useSettings();
+  const restaurantName = settings?.restaurantName || RESTAURANT_CONFIG.name;
+
   return (
     <section
-      className="py-14 sm:py-20 bg-secondary"
+      className="py-14 sm:py-20 lg:py-24 bg-secondary relative overflow-hidden"
       aria-labelledby="final-cta-heading"
     >
       <Container>
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-primary text-white p-6 sm:p-12 lg:p-16 border border-primary-light/80 shadow-lg text-center">
-          {/* Subtle Ambient Gold Glow */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#121214] via-[#1A1A1F] to-[#121214] text-white p-8 sm:p-14 lg:p-20 border border-accent/30 shadow-2xl text-center">
+          {/* Ambient Gold Spotlight Glow */}
           <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 -z-0 w-80 h-80 bg-accent/10 rounded-full blur-3xl pointer-events-none"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-0 w-[36rem] h-[36rem] bg-accent/10 rounded-full blur-3xl pointer-events-none"
             aria-hidden="true"
           />
 
-          <div className="relative z-10 max-w-2xl mx-auto space-y-6">
+          <div className="relative z-10 max-w-2xl mx-auto space-y-6 sm:space-y-7">
             {/* Eyebrow Status Pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-light border border-primary-light text-accent text-xs font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-              <span>{RESTAURANT_CONFIG.name} Takeaway Counter</span>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/15 border border-accent/40 text-accent text-xs font-bold uppercase tracking-widest">
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              <span>{restaurantName} &bull; Takeaway Counter</span>
             </div>
 
             {/* Headline */}
             <h2
               id="final-cta-heading"
-              className="text-2xl xs:text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight"
+              className="text-3xl xs:text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight"
             >
               Order Ahead.{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-accent to-amber-300">
@@ -41,21 +46,21 @@ export default function FinalOrderCTA() {
             </h2>
 
             {/* Supporting Text */}
-            <p className="text-sm sm:text-base text-muted-light max-w-xl mx-auto leading-relaxed">
-              Choose your favorite dishes, select a pickup time, and collect your parcel directly from the restaurant.
+            <p className="text-sm sm:text-base text-stone-300 max-w-xl mx-auto leading-relaxed">
+              Choose your favorite dishes, select a pickup time, and collect your parcel directly from the restaurant counter with zero queue wait.
             </p>
 
             {/* Action CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 pt-2">
               <Link
                 to="/menu"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-accent text-primary text-sm font-extrabold shadow-md hover:bg-accent-hover hover:text-white transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white active:scale-98"
+                className="btn-premium-shine inline-flex items-center justify-center gap-2.5 px-8 sm:px-10 py-4 rounded-xl bg-accent text-primary text-sm font-black shadow-lg shadow-accent/25 hover:bg-accent-hover hover:text-white transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white active:scale-98 group"
                 aria-label="Order online now"
               >
-                <span>Order Online</span>
+                <span>Order Online for Pickup</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-4 h-4"
+                  className="w-4 h-4 group-hover:translate-x-1 transition-transform"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -69,24 +74,24 @@ export default function FinalOrderCTA() {
 
               <Link
                 to="/menu"
-                className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl bg-primary-light text-white text-sm font-semibold border border-primary-light/90 hover:bg-primary-light/60 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-accent active:scale-98"
+                className="inline-flex items-center justify-center px-8 sm:px-10 py-4 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-bold border border-white/20 hover:border-accent/60 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-accent active:scale-98 backdrop-blur-xs"
                 aria-label="View food menu"
               >
-                View Menu
+                View Full Menu
               </Link>
             </div>
 
             {/* Key Pickup Reminders */}
-            <div className="pt-6 border-t border-primary-light/60 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-light">
-              <div className="flex items-center gap-1.5">
+            <div className="pt-6 sm:pt-8 border-t border-white/15 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-stone-300 font-medium">
+              <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                 <span>In-Store Counter Pickup</span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                 <span>Zero Wait Time When Pre-Ordered</span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                 <span>Daily: {RESTAURANT_CONFIG.operatingHours.time}</span>
               </div>
@@ -97,3 +102,4 @@ export default function FinalOrderCTA() {
     </section>
   );
 }
+

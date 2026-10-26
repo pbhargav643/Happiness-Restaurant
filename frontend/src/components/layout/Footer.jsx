@@ -55,22 +55,12 @@ export default function Footer() {
           {/* Column 1: Restaurant Branding & Mission */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg bg-primary-light border border-primary-light flex items-center justify-center text-accent shadow-xs">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5 text-accent"
-                  aria-hidden="true"
-                >
-                  <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
-                  <path d="M4 11h16a1 1 0 0 1 1 1v1a7 7 0 0 1-7 7H10a7 7 0 0 1-7-7v-1a1 1 0 0 1 1-1Z" />
-                  <path d="M4 21h16" />
-                </svg>
+              <div className="w-10 h-10 rounded-lg bg-white border border-surface-border p-0.5 shadow-xs flex-shrink-0 flex items-center justify-center overflow-hidden">
+                <img
+                  src="/images/logo/trupti-snacks-restaurant-logo.png"
+                  alt={`${restaurantName} Logo`}
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="font-extrabold text-base sm:text-lg text-white uppercase tracking-tight">
                 {restaurantName}
